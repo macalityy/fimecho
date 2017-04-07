@@ -1,5 +1,5 @@
-library("twitteR")
-library("ROAuth")
+library(twitteR)
+library(ROAuth)
 api_keys <- read.csv2("api_key.csv", header = TRUE, sep = ";", stringsAsFactors = FALSE)
 setup_twitter_oauth(
   consumer_key = api_keys$consumer_key,

@@ -10,7 +10,7 @@ load("tw_oauth.Rdata")
 
 args <- commandArgs(trailingOnly = TRUE)
 tw_track <- args[1]
-tw_duration <- args[2]
+tw_duration <- as.numeric(args[2])
 tw_file <- args[3]
 
 #set filename

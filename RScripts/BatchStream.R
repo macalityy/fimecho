@@ -22,8 +22,9 @@ filterStream(file.name = tw_filename, track = tw_track, timeout = tw_duration, o
 
 #parseData
 tweets <- parseTweets(tw_filename, simplify = FALSE)
+#delete JSON file
+file.remove(tw_filename)
 #write in CSV
 tw_filename <- paste(c("Data/", tw_track, "_", current.time, ".csv"), collapse = "")
 write.csv2(tweets, file = tw_filename)
-#delete JSON file
-file.remove(tw_filename)
+

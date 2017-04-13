@@ -11,27 +11,10 @@ load("tw_oauth.Rdata")
 args <- commandArgs(trailingOnly = TRUE)
 tw_track <- args[1]
 tw_duration <- args[2]
+tw_file <- args[3]
 
-
-# calculate seconds out of hours given
-  tw_duration <- tw_duration * 3600
-  tw_i <- 0
-  # 
-  while( tw_duration >= 0) {
-    if (tw_duration >= 3600) {
-      tw_timeout <- 3600
-    } else {
-      tw_timeout <- tw_duration
-    }
+#set filename
+tw_file <- paste(c("/data/", tw_track, tw_file, ".json"), collapse = "")
     
-    #increment filename
-    tw_i <- tw_i + 1
-    #set filename
-    tw_file <- paste(c(tw_track, tw_i, ".json"), collapse = "")
-    
-    #get twitter data
-    filterStream(file.name = tw_file, track = tw_track, timeout = tw_timeout, oauth = tw_oauth)
-    #reduce left duration
-    tw_duration <- tw_duration - tw_timeout
-  }
-
+#get twitter data
+filterStream(file.name = tw_file, track = tw_track, timeout = tw_duration, oauth = tw_oauth)

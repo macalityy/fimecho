@@ -14,7 +14,14 @@ tw_duration <- args[2]
 tw_file <- args[3]
 
 #set filename
-tw_file <- paste(c("/data/", tw_track, tw_file, ".json"), collapse = "")
+tw_filename <- paste(c("/data/", tw_track, tw_file, ".json"), collapse = "")
     
 #get twitter data
-filterStream(file.name = tw_file, track = tw_track, timeout = tw_duration, oauth = tw_oauth)
+filterStream(file.name = tw_filename, track = tw_track, timeout = tw_duration, oauth = tw_oauth)
+
+#parseData
+tweets <- parseTweets(tw_file, simplify = FALSE)
+#write in CSV
+write.csv2(tweets, file = paste(c("/data/", tw_track, tw_file, ".csv")))
+#delete JSON file
+file.remove(tw_filename)

@@ -1,8 +1,8 @@
 #load libraries
 library("ROAuth")
 library("rjson")
-library("RCurl")
 library("bitops")
+library("RCurl")
 library("streamR")
 
 # Load authentification into workspace
@@ -14,14 +14,15 @@ tw_duration <- as.numeric(args[2])
 tw_file <- args[3]
 
 #set filename
-tw_filename <- paste(c("/data/", tw_track, tw_file, ".json"), collapse = "")
+tw_filename <- paste(c("Data/", tw_track, tw_file, ".json"), collapse = "")
     
 #get twitter data
 filterStream(file.name = tw_filename, track = tw_track, timeout = tw_duration, oauth = tw_oauth)
 
 #parseData
-tweets <- parseTweets(tw_file, simplify = FALSE)
+tweets <- parseTweets(tw_filename, simplify = FALSE)
 #write in CSV
-write.csv2(tweets, file = paste(c("/data/", tw_track, tw_file, ".csv")))
+tw_filename <- paste(c("Data/", tw_track, tw_file, ".csv"), collapse = "")
+write.csv2(tweets, file = tw_filename)
 #delete JSON file
 file.remove(tw_filename)

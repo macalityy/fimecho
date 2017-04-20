@@ -7,7 +7,7 @@ library("RCurl")
 library("streamR")
 
 # Load authentification into workspace
-load("tw_oauth.Rdata")
+load("/home/rstudio/fimecho/RScripts/tw_oauth.Rdata")
 
 #get arguments from cmd line
 args <- commandArgs(trailingOnly = TRUE)

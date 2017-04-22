@@ -46,7 +46,12 @@ user_retweet <- unlist(user_retweet)
 # generate edgelist
 edgelist <- cbind(user_retweet, user_originaltw)
 
+#create iGraph Object from edgelist
 rt_graph = graph.edgelist(edgelist)
 
-save(rt_graph, file = paste(c(file, "_graph.RData")))
+# set filename
+current.time <- format(Sys.time(), "%Y_%m_%d_%H_%M")
+graph_name <- paste(c("/home/rstudio/fimecho/Graphs/", current.time, ".RData"), collapse = "")
+# save Graph in .RData-File
+save( rt_graph, file = graph_name )
 

@@ -2,13 +2,14 @@
 library(stringr)
 library(igraph)
 library(streamR)
-library(dplyr)
+library(plyr)
 
 #get arguments from cmd line
 args <- commandArgs(trailingOnly = TRUE)
 
 #get csv file path 
 file <- unlist(args[1])
+filter <- unlist(args[2])
 
 #read csv file to get tweets into dataframe
 tweets.df <- read.csv2(file = file, header = TRUE, stringsAsFactors = FALSE)
@@ -44,27 +45,24 @@ user.retweet <- unlist(user.retweet)
 # generate edgelist
 edgelist <- cbind(user.retweet, user.originaltw)
 
-#########filte
-user.originaltw.grouped <- group_by(edgelist, "user.originaltw")
-user.originaltw.freq <- summarise(user.originaltw.grouped, freq = n())
+#filter 
+if( filter == TRUE)
+  {
+  edgelist.df <- as.data.frame(edgelist)
+  user.originaltw.freq <- count(user.originaltw)
 
-user.originaltw.filtered <- filter(user.originaltw.freq, freq > 10)
-user.originaltw.filtered <- user.originaltw.filtered[,1]
+  user.originaltw.freq <- subset(user.originaltw.freq, user.originaltw.freq$freq > 10)
+  edgelist.df <- subset(edgelist.df, edgelist.df$user.originaltw %in% user.originaltw.freq)
 
-edgelist.filtered <- subset(edgelist, user_originaltw %in% user.originaltw.filtered)
-########## end of filter
-
+  edgelist <- as.matrix(edgelist.df)
+}
 
 #create iGraph Object from edgelist
 rt.graph = graph.edgelist(edgelist)
-
+  
+  
 # set filename
 current.time <- format(Sys.time(), "%Y_%m_%d_%H_%M")
 graph.name <- paste(c("/home/rstudio/fimecho/Graphs/", current.time, ".RData"), collapse = "")
 # save Graph in .RData-File
 save( rt.graph, file = graph.name )
-
-
-grouped.original
-
-

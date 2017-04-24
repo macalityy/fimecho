@@ -2,6 +2,7 @@
 library(stringr)
 library(igraph)
 library(streamR)
+library(dplyr)
 
 #get arguments from cmd line
 args <- commandArgs(trailingOnly = TRUE)
@@ -13,45 +14,57 @@ file <- unlist(args[1])
 tweets.df <- read.csv2(file = file, header = TRUE, stringsAsFactors = FALSE)
 
 # from the data frame, we only need the column text to find out which rows are retweets
-tweets_text <- tweets.df[,"text"]
-
-#not necessary
-#retweets_texts <- grep("(RT)(?:\\b\\W@\\w+)", tweets_text, ignore.case = TRUE, value = TRUE)
+tweets.text <- tweets.df[,"text"]
 
 # now we need all retweet ids (those lines in tweets.df which are actual retweets)
-retweets_ids  <- grep("(RT)(?:\\b\\W@\\w+)", tweets_text, ignore.case = TRUE )
+retweets.ids  <- grep("(RT)(?:\\b\\W@\\w+)", tweets.text, ignore.case = TRUE )
 
 # create list to store user names of retweets
-user_originaltw <- as.list( 1:length(retweets_ids))
-user_retweet <- as.list(1:length(retweets_ids))
+user.originaltw <- as.list( 1:length(retweets.ids))
+user.retweet <- as.list(1:length(retweets.ids))
 
 
-for (i in 1:length(retweets_ids))
+for (i in 1:length(retweets.ids))
 {
   #get tweet text
-  tweet_text <- tweets_text[[retweets_ids[i]]]
+  tweet.text <- tweets.text[[retweets.ids[i]]]
   #find user who posted original tweet
-  tweet_original_poster <- str_extract_all(tweet_text, "(RT)(?:\\b\\W@\\w+)" )
+  tweet.original.poster <- str_extract_all(tweet.text, "(RT)(?:\\b\\W@\\w+)" )
   
   #save user who posted original tweet in vector
-  user_originaltw[[i]] = gsub("(RT @)", "", tweet_original_poster, ignore.case = TRUE )
+  user.originaltw[[i]] = gsub("(RT @)", "", tweet.original.poster, ignore.case = TRUE )
   #save user who retweeted in vector
-  user_retweet [[i]] = tweets.df[retweets_ids[i],"screen_name"]
+  user.retweet [[i]] = tweets.df[retweets.ids[i],"screen_name"]
                  
 }
 
-user_originaltw <- unlist(user_originaltw)
-user_retweet <- unlist(user_retweet)
+user.originaltw <- unlist(user.originaltw)
+user.retweet <- unlist(user.retweet)
 
 # generate edgelist
-edgelist <- cbind(user_retweet, user_originaltw)
+edgelist <- cbind(user.retweet, user.originaltw)
+
+#########filte
+user.originaltw.grouped <- group_by(edgelist, "user.originaltw")
+user.originaltw.freq <- summarise(user.originaltw.grouped, freq = n())
+
+user.originaltw.filtered <- filter(user.originaltw.freq, freq > 10)
+user.originaltw.filtered <- user.originaltw.filtered[,1]
+
+edgelist.filtered <- subset(edgelist, user_originaltw %in% user.originaltw.filtered)
+########## end of filter
+
 
 #create iGraph Object from edgelist
-rt_graph = graph.edgelist(edgelist)
+rt.graph = graph.edgelist(edgelist)
 
 # set filename
 current.time <- format(Sys.time(), "%Y_%m_%d_%H_%M")
-graph_name <- paste(c("/home/rstudio/fimecho/Graphs/", current.time, ".RData"), collapse = "")
+graph.name <- paste(c("/home/rstudio/fimecho/Graphs/", current.time, ".RData"), collapse = "")
 # save Graph in .RData-File
-save( rt_graph, file = graph_name )
+save( rt.graph, file = graph.name )
+
+
+grouped.original
+
 

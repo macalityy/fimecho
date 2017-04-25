@@ -79,18 +79,20 @@ if( filter.value > 0)
   # filter out those users with userid = 'NA'
   user.ties.filtered.df <- subset(user.ties.filtered.df, is.na(user.ties.filtered.df$user_id_str) == FALSE)
   
+  colnames(user.ties.filtered.df) <- c("name", "ties.in", "ties.out", "Id")
+  
   #now filter the edgelist correspondingly
   edgelist.df <- subset(edgelist.df,
-                        ( edgelist.df$user.originaltw %in% user.ties.filtered.df$x ) &
-                        ( edgelist.df$user.retweet %in% user.ties.filtered.df$x) )
+                        ( edgelist.df$user.originaltw %in% user.ties.filtered.df$name ) &
+                        ( edgelist.df$user.retweet %in% user.ties.filtered.df$name) )
   
   #in edgelist get userIDs for retweeter
-  edgelist.id.df <- merge(edgelist.df, user.ties.filtered.df[,c("x", "user_id_str")], by.x = "user.retweet", by.y = "x", all.x = TRUE)
+  edgelist.id.df <- merge(edgelist.df, user.ties.filtered.df[,c("name", "Id")], by.x = "user.retweet", by.y = "name", all.x = TRUE)
   #in edgelist get userIDs for original poster
-  edgelist.id.df <- merge(edgelist.id.df, user.ties.filtered.df[,c("x", "user_id_str")], by.x = "user.originaltw", by.y = "x", all.x = TRUE)
+  edgelist.id.df <- merge(edgelist.id.df, user.ties.filtered.df[,c("name", "Id")], by.x = "user.originaltw", by.y = "name", all.x = TRUE)
   
   # rename colums
-  colnames(edgelist.id.df) <- c("user.to.name", "user.from.name", "user.from", "user.to")
+  colnames(edgelist.id.df) <- c("user.to.name", "user.from.name", "source", "target")
   
   #get edgelist with IDs as matrix
   edgelist <- as.matrix(edgelist.id.df)

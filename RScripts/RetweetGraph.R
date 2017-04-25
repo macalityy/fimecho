@@ -9,7 +9,7 @@ args <- commandArgs(trailingOnly = TRUE)
 
 #get csv file path 
 file <- unlist(args[1])
-filter <- unlist(args[2])
+filter.value <- as.integer(unlist(args[2]))
 
 #read csv file to get tweets into dataframe
 tweets.df <- read.csv2(file = file, header = TRUE, stringsAsFactors = FALSE)
@@ -46,15 +46,25 @@ user.retweet <- unlist(user.retweet)
 edgelist <- cbind(user.retweet, user.originaltw)
 
 #filter 
-if( filter == TRUE)
+if( filter.value > 0)
   {
   edgelist.df <- as.data.frame(edgelist)
+  
+  #get # of ties for each retweeter and original tweeter
   user.originaltw.freq <- count(user.originaltw)
-
-  user.originaltw.freq <- subset(user.originaltw.freq, user.originaltw.freq$freq > 10)
-  edgelist.df <- subset(edgelist.df, edgelist.df$user.originaltw %in% user.originaltw.freq)
+  
+  #user.retweet.freq <- count(user.retweet)
+  
+  ##build a data frame with # of ties for each user
+  #user.connections <- cbind(user.originaltw.freq$x, user.originaltw.freq$freq = "ties.in", user.retweet.freq$freq = "ties.out")
+  
+  user.originaltw.freq <- subset(user.originaltw.freq, user.originaltw.freq$freq > filter.value)
+  edgelist.df <- subset(edgelist.df, edgelist.df$user.originaltw %in% user.originaltw.freq$x)
 
   edgelist <- as.matrix(edgelist.df)
+  
+  #rm(user.originaltw.freq)
+  #rm(user.retweet.freq)
 }
 
 #create iGraph Object from edgelist

@@ -24,7 +24,7 @@ retweets.ids  <- grep("(RT)(?:\\b\\W@\\w+)", tweets.text, ignore.case = TRUE )
 user.originaltw <- as.list( 1:length(retweets.ids))
 user.retweet <- as.list(1:length(retweets.ids))
 
-
+## User Identification in Retweets ##
 for (i in 1:length(retweets.ids))
 {
   #get tweet text
@@ -49,7 +49,7 @@ user.retweet <- unlist(user.retweet)
 # generate edgelist
 edgelist <- cbind(user.retweet, user.originaltw)
 
-#filter 
+## Apply Filtering Criteria on Edgelist ##
 if( filter.value > 0)
   {
   edgelist.df <- as.data.frame(edgelist)
@@ -64,22 +64,37 @@ if( filter.value > 0)
   
   ##build a data frame with # of ties for each user
   user.ties.df <- merge(user.originaltw.freq, user.retweet.freq, by.x = "x", by.y = "x", all = TRUE)
-  
   #change all NA values to 0
   user.ties.df[is.na(user.ties.df)] <- 0
   
   #now filter users depending on their amount of ties
   user.ties.filtered.df <- subset(user.ties.df, (user.ties.df$ties.in + user.ties.df$ties.out) > filter.value)
   
+  # now get user IDs for all users
+  user.ties.filtered.df <- merge(user.ties.filtered.df, tweets.df[,c("user_id_str","screen_name")], by.x = "x", by.y = "screen_name", all.x = TRUE, all.y = FALSE)
+  # since merge expands the data frame, reduce it back to unique ones
+  user.ties.filtered.df <- unique(user.ties.filtered.df)
+  # and reformat the user id from numeric to character
+  user.ties.filtered.df$user_id_str <- as.character(user.ties.filtered.df$user_id_str)
+  # filter out those users with userid = 'NA'
+  user.ties.filtered.df <- subset(user.ties.filtered.df, is.na(user.ties.filtered.df$user_id_str) == FALSE)
+  
   #now filter the edgelist correspondingly
   edgelist.df <- subset(edgelist.df,
                         ( edgelist.df$user.originaltw %in% user.ties.filtered.df$x ) &
                         ( edgelist.df$user.retweet %in% user.ties.filtered.df$x) )
-
-  edgelist <- as.matrix(edgelist.df)
   
-  #rm(user.originaltw.freq)
-  #rm(user.retweet.freq)
+  #in edgelist get userIDs for retweeter
+  edgelist.id.df <- merge(edgelist.df, user.ties.filtered.df[,c("x", "user_id_str")], by.x = "user.retweet", by.y = "x", all.x = TRUE)
+  #in edgelist get userIDs for original poster
+  edgelist.id.df <- merge(edgelist.id.df, user.ties.filtered.df[,c("x", "user_id_str")], by.x = "user.originaltw", by.y = "x", all.x = TRUE)
+  
+  # rename colums
+  colnames(edgelist.id.df) <- c("user.to.name", "user.from.name", "user.from", "user.to")
+  
+  #get edgelist with IDs as matrix
+  edgelist <- as.matrix(edgelist.id.df)
+  
 }
 
 #create iGraph Object from edgelist

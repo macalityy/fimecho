@@ -34,9 +34,13 @@ for (i in 1:length(retweets.ids))
   
   #save user who posted original tweet in vector
   user.originaltw[[i]] = gsub("(RT @)", "", tweet.original.poster, ignore.case = TRUE )
+  
   #save user who retweeted in vector
   user.retweet [[i]] = tweets.df[retweets.ids[i],"screen_name"]
                  
+  ##update data frame
+  #tweets.df[retweets.ids[i],"is.rt"] <- TRUE
+  #tweets.df[retweets.ids[i],"user.tw"] <- gsub("(RT @)", "", tweet.original.poster, ignore.case = TRUE )
 }
 
 user.originaltw <- unlist(user.originaltw)
@@ -52,14 +56,25 @@ if( filter.value > 0)
   
   #get # of ties for each retweeter and original tweeter
   user.originaltw.freq <- count(user.originaltw)
+  user.retweet.freq <- count(user.retweet)
   
-  #user.retweet.freq <- count(user.retweet)
+  #change colnames of data frame to tiesin and tiesout
+  colnames(user.originaltw.freq) <- c("x", "ties.in")
+  colnames(user.retweet.freq) <- c("x", "ties.out")
   
   ##build a data frame with # of ties for each user
-  #user.connections <- cbind(user.originaltw.freq$x, user.originaltw.freq$freq = "ties.in", user.retweet.freq$freq = "ties.out")
+  user.ties.df <- merge(user.originaltw.freq, user.retweet.freq, by.x = "x", by.y = "x", all = TRUE)
   
-  user.originaltw.freq <- subset(user.originaltw.freq, user.originaltw.freq$freq > filter.value)
-  edgelist.df <- subset(edgelist.df, edgelist.df$user.originaltw %in% user.originaltw.freq$x)
+  #change all NA values to 0
+  user.ties.df[is.na(user.ties.df)] <- 0
+  
+  #now filter users depending on their amount of ties
+  user.ties.filtered.df <- subset(user.ties.df, (user.ties.df$ties.in + user.ties.df$ties.out) > filter.value)
+  
+  #now filter the edgelist correspondingly
+  edgelist.df <- subset(edgelist.df,
+                        ( edgelist.df$user.originaltw %in% user.ties.filtered.df$x ) &
+                        ( edgelist.df$user.retweet %in% user.ties.filtered.df$x) )
 
   edgelist <- as.matrix(edgelist.df)
   

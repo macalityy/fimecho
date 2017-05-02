@@ -37,10 +37,6 @@ for (i in 1:length(retweets.ids))
   
   #save user who retweeted in vector
   user.retweet [[i]] = tweets.df[retweets.ids[i],"screen_name"]
-                 
-  ##update data frame
-  #tweets.df[retweets.ids[i],"is.rt"] <- TRUE
-  #tweets.df[retweets.ids[i],"user.tw"] <- gsub("(RT @)", "", tweet.original.poster, ignore.case = TRUE )
 }
 
 user.originaltw <- unlist(user.originaltw)
@@ -62,8 +58,11 @@ if( filter.value > 0)
   colnames(user.originaltw.freq) <- c("x", "ties.in")
   colnames(user.retweet.freq) <- c("x", "ties.out")
   
-  ##build a data frame with # of ties for each user
-  user.ties.df <- merge(user.originaltw.freq, user.retweet.freq, by.x = "x", by.y = "x", all = TRUE)
+  #build a data frame with # of ties for each user
+  user.ties.df <- merge(user.originaltw.freq,
+                        user.retweet.freq,
+                        by.x = "x", by.y = "x",
+                        all = TRUE)
   #change all NA values to 0
   user.ties.df[is.na(user.ties.df)] <- 0
   
@@ -89,10 +88,27 @@ if( filter.value > 0)
   
   colnames(user.ties.filtered.df) <- c("name", "ties.in", "ties.out", "Id")
   
-  #now filter the edgelist correspondingly
+  # now filter the edgelist correspondingly
   edgelist.df <- subset(edgelist.df,
                         ( edgelist.df$user.originaltw %in% user.ties.filtered.df$name ) &
                         ( edgelist.df$user.retweet %in% user.ties.filtered.df$name) )
+  
+  
+  ### update the ties.in and ties.out
+  user.originaltw.freq <- count(edgelist.df$user.originaltw)
+  user.retweet.freq <- count(edgelist.df$user.retweet)
+  #change colnames of data frame to tiesin and tiesout
+  colnames(user.originaltw.freq) <- c("x", "ties.in")
+  colnames(user.retweet.freq) <- c("x", "ties.out")
+  
+  #build a data frame with # of ties for each user
+  user.ties.filtered.df <- merge(user.originaltw.freq,
+                                 user.retweet.freq,
+                                 by.x = "x", by.y = "x",
+                                 all = TRUE)
+  #change all NA values to 0
+  user.ties.filtered.df[is.na(user.ties.filtered.df)] <- 0
+  ### / update the ties.in and ties.out
   
   #in edgelist get userIDs for retweeter
   edgelist.id.df <- merge(edgelist.df,
@@ -111,6 +127,17 @@ if( filter.value > 0)
   #get edgelist with IDs as matrix
   edgelist <- as.matrix( edgelist.id.df[, c("user.to.name", "user.from.name")] )
 }
+
+
+#Create CSV File for Gephi
+### STOP
+# define a file name!
+
+#file.name <- ""
+write.csv2(edgelist.id.df, file = file.name)
+#change filename here!
+write.csv2(user.ties.filtered.df, file = file.name)
+### CONTINUE
 
 #create iGraph Object from edgelist
 rt.graph = graph.edgelist(edgelist)

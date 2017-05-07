@@ -3,9 +3,13 @@ library(stringr)
 library(igraph)
 library(streamR)
 library(plyr)
-
-file <- "/users/flori/fimecho/Data/T0418.csv"
+library(dplyr)
+file <- "/users/flori/fimecho/Data/Turkey/Turkeyall.csv"
 filename.out<-"/users/flori/fimecho/Data/User_Hashtag.csv"
+
+
+
+
 #read csv file to get tweets into dataframe
 tweets.df <- read.csv2(file = file, header = TRUE, stringsAsFactors = FALSE)
 
@@ -47,6 +51,44 @@ for (i in 1:length(tweets.hashtags))
 UsrHashtag = UsrHashtag[-1,]
 head(UsrHashtag)
 
-
 UHFreq.df<-as.data.frame(count(UsrHashtag))
 write.csv2(UHFreq.df, file = filename.out)
+
+##Filter for Maximum Hashtag-Frequency
+##Read CSV File into UserHashtagFrequency Dataframe (UHF)
+UHF.df <- read.csv2(file = filename.out, header = TRUE, stringsAsFactors = FALSE)
+
+##Identification of unique users
+Users.df <- UHF.df %>% distinct(x.1)
+
+##Select Maximum 1 used hashtags per user
+##Returns Dataframe with most frequently used hashtag per user (Multiple Maximum HashtagsFrequency possible)
+UHTop1Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 1, wt= freq)
+UHTop2Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 2, wt= freq)
+UHTop3Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 3, wt= freq)
+UHTop4Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 4, wt= freq)
+UHTop5Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 5, wt= freq)
+
+##Remove one time used hashtags
+UHFreqFiltered.df <- subset(UHF.df, freq!="1")
+UHTop1FreqFiltered.df <- as.data.frame(UHFreqFiltered.df %>% group_by(x.1) %>% top_n(n=1))
+UHTop2FreqFiltered.df <- UHFreqFiltered.df %>% group_by(x.1)%>% top_n(n = 2, wt= freq)
+
+#Remove Hashtag-Frequencies of not selected hashtags
+#Only Selected Hashtag Frequencies are relevant
+UHFreqFilHashtags.df <- subset(UHF.df, 
+                                 x.2=="#hayir"|
+                                 x.2== "#turkeyreferendum"|
+                                 x.2=="#referendum"|
+                                 x.2=="#Turkey"|
+                                 x.2=="#turkeyschoice"|
+                                 x.2=="#evet"|
+                                 x.2=="#turkish")
+
+UHTop7FreqFilHashtags.df <- as.data.frame(UHFreqFilHashtags.df %>% group_by(x.1) %>% top_n(n=7))
+#Remove X Column (created by Write out and Read in as csv-File)
+UHTop5FreqFilHashtags.df <- subset(UHTop7FreqFilHashtags.df, select = c(x.1,x.2,freq))
+SelectedHashtagFreqperUser <- dcast(UHTop7FreqFilHashtags.df, x.1 ~ x.2, value.var="freq")
+
+
+###END

@@ -14,6 +14,14 @@ filter.value <- as.integer(unlist(args[2]))
 #read csv file to get tweets into dataframe
 tweets.df <- read.csv2(file = file, header = TRUE, stringsAsFactors = FALSE)
 
+#shrink dataframe to columns we might use later
+tweets.df <- subset(tweets.df[,c("X.1", "X", "text", "truncated", "id_str", "source",
+                                  "created_at", "lang", "listed_count", "location",
+                                  "user_id_str", "geo_enabled", "user_created_at",
+                                  "statuses_count", "followers_count", "favourites_count",
+                                  "time_zone", "user_lang", "friends_count", "screen_name",
+                                  "expanded_url", "url")])
+
 # from the data frame, we only need the column text to find out which rows are retweets
 tweets.text <- tweets.df[,"text"]
 
@@ -76,6 +84,17 @@ if( filter.value > 0)
                                  by.x = "x", by.y = "screen_name",
                                  all.x = TRUE, all.y = FALSE)
   
+  # get more data for all users
+  user.ties.filtered.df <- merge(user.ties.filtered.df,
+                                 tweets.df[,c("user_id_str", "geo_enabled",
+                                              "user_created_at", "statuses_count",
+                                              "followers_count", "favourites_count",
+                                              "time_zone", "user_lang",
+                                              "friends_count","screen_name")],
+                                 by.x = "x", by.y = "screen_name",
+                                 all.x = TRUE, all.y = FALSE)
+  
+  
   # since merge expands the data frame, reduce it back to unique ones
   user.ties.filtered.df <- unique(user.ties.filtered.df)
   
@@ -94,7 +113,8 @@ if( filter.value > 0)
                         ( edgelist.df$user.retweet %in% user.ties.filtered.df$name) )
   
   
-  ### update the ties.in and ties.out
+############################################
+  ### update the ties.in and ties.out ###
   user.originaltw.freq <- count(edgelist.df$user.originaltw)
   user.retweet.freq <- count(edgelist.df$user.retweet)
   #change colnames of data frame to tiesin and tiesout
@@ -108,7 +128,8 @@ if( filter.value > 0)
                                  all = TRUE)
   #change all NA values to 0
   user.ties.filtered.df[is.na(user.ties.filtered.df)] <- 0
-  ### / update the ties.in and ties.out
+  ### / update the ties.in and ties.out ###
+##############################################
   
   #in edgelist get userIDs for retweeter
   edgelist.id.df <- merge(edgelist.df,

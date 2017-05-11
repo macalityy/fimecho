@@ -4,8 +4,10 @@ library(igraph)
 library(streamR)
 library(plyr)
 library(dplyr)
-file <- "/users/flori/fimecho/Data/Turkey/Turkeyall.csv"
-filename.out<-"/users/flori/fimecho/Data/User_Hashtag.csv"
+path<-"/users/flori/fimecho/Data/"
+file <- paste(path,"Turkey/Turkeyall.csv",sep="")
+filename.out<-paste(path,"User_HashtagTurkeyAll.csv",sep="")
+nodelist.filename <- paste(path,"KantenTurkey.csv",sep="")
 
 
 
@@ -14,64 +16,104 @@ filename.out<-"/users/flori/fimecho/Data/User_Hashtag.csv"
 tweets.df <- read.csv2(file = file, header = TRUE, stringsAsFactors = FALSE)
 
 #shrink dataframe to columns we might use later
-tweets.df <- subset(tweets.df[,c("X.1", "X", "text", "truncated", "id_str", "source",
-                                 "created_at", "lang", "listed_count", "location",
-                                 "user_id_str", "geo_enabled", "user_created_at",
-                                 "statuses_count", "followers_count", "favourites_count",
-                                 "time_zone", "user_lang", "friends_count", "screen_name",
-                                 "expanded_url", "url")])
+tweets.df <- subset(tweets.df[ ,c("X.1", "X", "text", "screen_name", "user_id_str")])
+
+###Optional
+#Check if #UserIDs==#UserScreenNames
+    #numUsersSN<-tweets.df %>% distinct(screen_name)
+    #numUsersID<-tweets.df %>% distinct(user_id_str)
+
+
+##OPTIONAL
+#####Remove Tweets from Users not in Filtered Network (From RetweetGraph.R Filter Value)
+
+      #read nodelist
+      nodelist.df <- read.csv2(file = nodelist.filename, header = TRUE, stringsAsFactors = FALSE)
+      #unique User-tweeted list
+      nodelist2.df <- nodelist.df %>% distinct(user.from.name)
+      
+      
+      tweetsFiltered.df <- merge(x = nodelist2.df, y = tweets.df,  by.x = "user.from.name", by.y = "screen_name", all.x = TRUE)
+
+
 
 # from the data frame, we only need the column text to find out which rows are retweets
+#tweets.text <- tweetsFiltered.df[,"text"]
 tweets.text <- tweets.df[,"text"]
-
 
 
 # Extract all the Hashtags per Tweet
 tweets.hashtags  <- str_extract_all(tweets.text,"[#]{1}(\\w+)")
+#Remove empty vectors(entries) in hashtag list
+tweets.hashtags<-tweets.hashtags[lapply(tweets.hashtags,length)>0]
 # Extract tweet ids which include a hashtag
 tweets.hashtags.ids <- grep("[#]{1}(\\w+)",tweets.text)
 # Extract usernames from tweet dataframe
+#user.originaltw<-tweetsFiltered.df["user.from.name"]
 user.originaltw<-tweets.df["screen_name"]
 
-#Remove empty vectors in hashtag list
-tweets.hashtags<-tweets.hashtags[lapply(tweets.hashtags,length)>0]
+head(tweets.hashtags)
+        
+        SumHashtags<-0
+        for (i in 1:length(tweets.hashtags))
+        {
+          SumHashtags<-SumHashtags+length(tweets.hashtags[[i]])
+        }
+        UserHashtagTable <- as.table(matrix("", ncol = 2, nrow = SumHashtags))  
+        
+        colnames(UserHashtagTable) <- c("User", "Hashtag")
+        head(UserHashtagTable)
+        
+        rownu<-0
+        
+        for (i in 1:length(tweets.hashtags))
+        {
+          for (j in 1:length(tweets.hashtags[[i]]))
+          {
+            rownu<-rownu+1
+            UserHashtagTable[rownu,1]<-user.originaltw[[tweets.hashtags.ids[i],1]]
+            UserHashtagTable[rownu,2]<-tweets.hashtags[[i]][j]
+          }
+        }
+        head(UserHashtagTable)
 
-tweets.hashtags
 
-UsrHashtag<-c("User","Hashtag")
 
-for (i in 1:length(tweets.hashtags))
-{
-  for (j in 1:length(tweets.hashtags[[i]]))
-  {
-    UsrHashtag<-rbind(UsrHashtag,c(user.originaltw[[tweets.hashtags.ids[i],1]],tweets.hashtags[[i]][j]))
-  }
-}
-#Remove first row of matrix
-UsrHashtag = UsrHashtag[-1,]
-head(UsrHashtag)
+UserHashtagTableAsDF<-as.data.frame.matrix(UserHashtagTable)
 
-UHFreq.df<-as.data.frame(count(UsrHashtag))
-write.csv2(UHFreq.df, file = filename.out)
+#if:Error in n() : This function should not be called directly
+#detach()
+library(dplyr)
+grp_cols <- c("User","Hashtag")
+
+# Convert character vector to list of symbols
+dots <- lapply(grp_cols, as.symbol)
+UHF<-UserHashtagTableAsDF %>%
+  group_by_(.dots=dots) %>%
+  summarise(n = n())
+
+write.csv2(UHF, file = filename.out)
 
 ##Filter for Maximum Hashtag-Frequency
 ##Read CSV File into UserHashtagFrequency Dataframe (UHF)
-UHF.df <- read.csv2(file = filename.out, header = TRUE, stringsAsFactors = FALSE)
+UHF <- read.csv2(file = filename.out, header = TRUE, stringsAsFactors = FALSE)
 
 ##Identification of unique users
-Users.df <- UHF.df %>% distinct(x.1)
+Users.df <- UHF %>% distinct(User)
 
 ##Select Maximum 1 used hashtags per user
 ##Returns Dataframe with most frequently used hashtag per user (Multiple Maximum HashtagsFrequency possible)
-UHTop1Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 1, wt= freq)
-UHTop2Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 2, wt= freq)
-UHTop3Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 3, wt= freq)
-UHTop4Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 4, wt= freq)
-UHTop5Freq.df <- UHF.df %>% group_by(x.1)%>% top_n(n = 5, wt= freq)
+UHTop1Freq.df <- UHF %>% group_by(User)%>% top_n(n = 1, wt= n)
+
+
+UHTop2Freq.df <- UHF %>% group_by(User)%>% top_n(n = 2, wt= n)
+UHTop3Freq.df <- UHF %>% group_by(User)%>% top_n(n = 3, wt= n)
+UHTop4Freq.df <- UHF %>% group_by(User)%>% top_n(n = 4, wt= n)
+UHTop5Freq.df <- UHF %>% group_by(User)%>% top_n(n = 5, wt= n)
 
 ##Remove one time used hashtags
-UHFreqFiltered.df <- subset(UHF.df, freq!="1")
-UHTop1FreqFiltered.df <- as.data.frame(UHFreqFiltered.df %>% group_by(x.1) %>% top_n(n=1))
+UHFreqFiltered.df <- subset(UHF, n!="1")
+UHTop1FreqFiltered.df <- UHFreqFiltered.df %>% group_by(User) %>% top_n(n = 1, wt= n)
 UHTop2FreqFiltered.df <- UHFreqFiltered.df %>% group_by(x.1)%>% top_n(n = 2, wt= freq)
 
 #Remove Hashtag-Frequencies of not selected hashtags
@@ -89,6 +131,17 @@ UHTop7FreqFilHashtags.df <- as.data.frame(UHFreqFilHashtags.df %>% group_by(x.1)
 #Remove X Column (created by Write out and Read in as csv-File)
 UHTop5FreqFilHashtags.df <- subset(UHTop7FreqFilHashtags.df, select = c(x.1,x.2,freq))
 SelectedHashtagFreqperUser <- dcast(UHTop7FreqFilHashtags.df, x.1 ~ x.2, value.var="freq")
-
-
 ###END
+
+
+
+Hashtags.df <- as.data.frame(unlist(tweets.hashtags))
+Hashtags.df <- mutate_each(Hashtags.df, funs(toupper))
+Hashtags.df<-as.data.frame(table(Hashtags.df))
+
+
+Hashtags.df<-Hashtags.df[Hashtags.df$Freq>100,]
+table(Hashtags.df)
+Hashtags.df$Var1 <- 1:16873
+hist(Hashtags.df$Var1, Hashtags.df$Freq, breaks = 16873)
+plot(Hashtags.df$x, Hashtags.df$Freq)

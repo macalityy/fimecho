@@ -37,6 +37,10 @@ UHFreqFilHashtags.df <- subset(UHF,
                                  Hashtag=="#TURKEYSCHOICE"|
                                  Hashtag=="#EVET"|
                                  Hashtag=="#TURKISH")
+# Convert character vector to list of symbols
+HashtagsFilteredFrequency<-UHFreqFilHashtags.df %>%
+  group_by_(.dots="Hashtag") %>%
+  summarise(n = n())
 
 
 #Remove X Column (created by Write out and Read in as csv-File)

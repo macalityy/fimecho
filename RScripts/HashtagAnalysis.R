@@ -61,13 +61,20 @@ RelFreq.df$max<- apply(RelFreq.df[,2:8], 1, max)
 
 RelFreq.df$Hashtag<-colnames(RelFreq.df[,2:8])[max.col(RelFreq.df[,2:8],ties.method="first")]
 
-
+##Additional Constraints: If Users most freqently used hashtag <=50% relative frequency -->uses more than one hashtag
 for(i in 1:nrow(RelFreq.df)){
   if(RelFreq.df[i,11]<= 0.5){
     RelFreq.df[i,10]<-NA
   }
 }
+##If users has used < 2 hashtags in total Hashtag also removed
+for(i in 1:nrow(RelFreq.df)){
+  if(RelFreq.df[i,9]<2){
+    RelFreq.df[i,10]<-NA
+  }
+}
 
+save(RelFreq.df, file = "/users/flori/fimecho/UserHashtagRelativeFrequency.RData")
 #####All HASHTAGs Analysis Start
 
 #Necessary if not Done already

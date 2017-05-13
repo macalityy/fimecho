@@ -36,16 +36,17 @@ for(i in 1:nrow(DateTimeFreq.df)){
   DateTimeFreq.df$Percent[i]=DateTimeFreq.df$Absolut[i]/sum(DateTimeFreq.df$Freq)
 }
 
+par(mar = rep(4, 4))
 barData<-DateTimeFreq.df$Freq
 y <- lineData<-DateTimeFreq.df$Percent
 x <- barplot(barData, 
-             axes = FALSE,
+             axes = TRUE,
              col = "blue", 
              xlab = "",
              ylab = "")[, 1]
 axis(1, at = x, labels = DateTimeFreq.df$Hours)
-ats <- c(0, 100)
-axis(4, labels = paste0(ats, "%"))
+#ats <- c(0, 100)
+#axis(4, labels = paste0(ats, "%"))
 #axis(3, at = x, labels = NA) 
 par(new = TRUE)
 plot(x = x, y = y, type = "l", col = "red", axes = FALSE, xlab = "", ylab = "")

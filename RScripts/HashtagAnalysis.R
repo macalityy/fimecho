@@ -5,7 +5,7 @@ library(streamR)
 library(plyr)
 library(dplyr)
 library(reshape2)
-
+detach()
 
 ##Filter for Maximum Hashtag-Frequency
 ##Read CSV File into UserHashtagFrequency Dataframe (UHF)
@@ -48,6 +48,18 @@ HashtagsFilteredFrequency<-UHFreqFilHashtags.df %>%
 #UHFreqFilHashtags.df <- subset(UHFreqFilHashtags.df, select = c(User, Hashtag,n))
 SelectedHashtagFreqperUser <- dcast(UHFreqFilHashtags.df, User ~ Hashtag, value.var="n")
 
+
+SelectedHashtagFreqperUser[,2:8][is.na(SelectedHashtagFreqperUser[,2:8])] <- 0
+SelectedHashtagFreqperUser$Sum<- rowSums(SelectedHashtagFreqperUser[,2:8])
+
+
+colnames(SelectedHashtagFreqperUser)<-c("User","EVET","HAYIR","REFERENDUM","TURKEY","TURKEYREFERENDUM","TURKEYSCHOICE","TURKISH","Sum")
+
+RelFreq.df<-mutate(SelectedHashtagFreqperUser[,1:9], EVET=EVET/Sum, HAYIR=HAYIR/Sum, REFERENDUM=REFERENDUM/Sum, TURKEY=TURKEY/Sum, TURKEYREFERENDUM=TURKEYREFERENDUM/Sum, TURKEYSCHOICE=TURKEYSCHOICE/Sum, TURKISH=TURKISH/Sum)
+#Max relative Frequency
+RelFreq.df$max<- apply(RelFreq.df[,2:8], 1, max)
+
+RelFreq.df$Hashtag<-colnames(RelFreq.df[,2:8])[max.col(RelFreq.df[,2:8],ties.method="first")]
 
 
 #####All HASHTAGs Analysis Start

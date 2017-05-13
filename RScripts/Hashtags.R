@@ -50,7 +50,7 @@ tweets.hashtags<-tweets.hashtags[lapply(tweets.hashtags,length)>0]
 tweets.hashtags.ids <- grep("[#]{1}(\\w+)",tweets.text)
 # Extract usernames from tweet dataframe
 #user.originaltw<-tweetsFiltered.df["user.from.name"]
-user.originaltw<-tweets.df["screen_name"]
+user.originaltw<-tweets.df["user_id_str"]
 
 head(tweets.hashtags)
         
@@ -71,13 +71,11 @@ head(tweets.hashtags)
           for (j in 1:length(tweets.hashtags[[i]]))
           {
             rownu<-rownu+1
-            UserHashtagTable[rownu,1]<-user.originaltw[[tweets.hashtags.ids[i],1]]
+            UserHashtagTable[rownu,1]<-as.character(user.originaltw[tweets.hashtags.ids[i],1])
             UserHashtagTable[rownu,2]<-tweets.hashtags[[i]][j]
           }
         }
         head(UserHashtagTable)
-
-
 
 UserHashtagTableAsDF<-as.data.frame.matrix(UserHashtagTable)
 
@@ -93,6 +91,7 @@ UHF<-UserHashtagTableAsDF %>%
   group_by_(.dots=dots) %>%
   summarise(n = n())
 
-write.csv2(UHF, file = "/users/flori/fimecho/Data/UHFreq_TurkeyAll.csv")
-write.csv2(tweets.hashtags, file = "/users/flori/fimecho/Data/Hashtags_TurkeyAll.csv")
+Hashtags.df<-as.data.frame(unlist(tweets.hashtags))
 
+save(UHF, file = "/users/flori/fimecho/UserHashtagFrequency.RData")
+save(Hashtags.df, file = "/users/flori/fimecho/Hashtags.RData")

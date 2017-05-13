@@ -81,6 +81,7 @@ head(tweets.hashtags)
 
 UserHashtagTableAsDF<-as.data.frame.matrix(UserHashtagTable)
 
+UserHashtagTableAsDF[,2] = toupper(UserHashtagTableAsDF[,2])
 #if:Error in n() : This function should not be called directly
 #detach()
 library(dplyr)
@@ -92,56 +93,6 @@ UHF<-UserHashtagTableAsDF %>%
   group_by_(.dots=dots) %>%
   summarise(n = n())
 
-write.csv2(UHF, file = filename.out)
+write.csv2(UHF, file = "/users/flori/fimecho/Data/UHFreq_TurkeyAll.csv")
+write.csv2(tweets.hashtags, file = "/users/flori/fimecho/Data/Hashtags_TurkeyAll.csv")
 
-##Filter for Maximum Hashtag-Frequency
-##Read CSV File into UserHashtagFrequency Dataframe (UHF)
-UHF <- read.csv2(file = filename.out, header = TRUE, stringsAsFactors = FALSE)
-
-##Identification of unique users
-Users.df <- UHF %>% distinct(User)
-
-##Select Maximum 1 used hashtags per user
-##Returns Dataframe with most frequently used hashtag per user (Multiple Maximum HashtagsFrequency possible)
-UHTop1Freq.df <- UHF %>% group_by(User)%>% top_n(n = 1, wt= n)
-
-
-UHTop2Freq.df <- UHF %>% group_by(User)%>% top_n(n = 2, wt= n)
-UHTop3Freq.df <- UHF %>% group_by(User)%>% top_n(n = 3, wt= n)
-UHTop4Freq.df <- UHF %>% group_by(User)%>% top_n(n = 4, wt= n)
-UHTop5Freq.df <- UHF %>% group_by(User)%>% top_n(n = 5, wt= n)
-
-##Remove one time used hashtags
-UHFreqFiltered.df <- subset(UHF, n!="1")
-UHTop1FreqFiltered.df <- UHFreqFiltered.df %>% group_by(User) %>% top_n(n = 1, wt= n)
-UHTop2FreqFiltered.df <- UHFreqFiltered.df %>% group_by(x.1)%>% top_n(n = 2, wt= freq)
-
-#Remove Hashtag-Frequencies of not selected hashtags
-#Only Selected Hashtag Frequencies are relevant
-UHFreqFilHashtags.df <- subset(UHF.df, 
-                                 x.2=="#hayir"|
-                                 x.2== "#turkeyreferendum"|
-                                 x.2=="#referendum"|
-                                 x.2=="#Turkey"|
-                                 x.2=="#turkeyschoice"|
-                                 x.2=="#evet"|
-                                 x.2=="#turkish")
-
-UHTop7FreqFilHashtags.df <- as.data.frame(UHFreqFilHashtags.df %>% group_by(x.1) %>% top_n(n=7))
-#Remove X Column (created by Write out and Read in as csv-File)
-UHTop5FreqFilHashtags.df <- subset(UHTop7FreqFilHashtags.df, select = c(x.1,x.2,freq))
-SelectedHashtagFreqperUser <- dcast(UHTop7FreqFilHashtags.df, x.1 ~ x.2, value.var="freq")
-###END
-
-
-
-Hashtags.df <- as.data.frame(unlist(tweets.hashtags))
-Hashtags.df <- mutate_each(Hashtags.df, funs(toupper))
-Hashtags.df<-as.data.frame(table(Hashtags.df))
-
-
-Hashtags.df<-Hashtags.df[Hashtags.df$Freq>100,]
-table(Hashtags.df)
-Hashtags.df$Var1 <- 1:16873
-hist(Hashtags.df$Var1, Hashtags.df$Freq, breaks = 16873)
-plot(Hashtags.df$x, Hashtags.df$Freq)

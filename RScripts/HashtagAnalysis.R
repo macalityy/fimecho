@@ -62,6 +62,12 @@ RelFreq.df$max<- apply(RelFreq.df[,2:8], 1, max)
 RelFreq.df$Hashtag<-colnames(RelFreq.df[,2:8])[max.col(RelFreq.df[,2:8],ties.method="first")]
 
 
+for(i in 1:nrow(RelFreq.df)){
+  if(RelFreq.df[i,11]<= 0.5){
+    RelFreq.df[i,10]<-NA
+  }
+}
+
 #####All HASHTAGs Analysis Start
 
 #Necessary if not Done already

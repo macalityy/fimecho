@@ -26,14 +26,12 @@ tweets.df <- subset(tweets.df[ ,c("X.1", "X", "text", "screen_name", "user_id_st
 
 ##OPTIONAL
 #####Remove Tweets from Users not in Filtered Network (From RetweetGraph.R Filter Value)
-
+#Tweets.df contains already only filtered user_id_str
       #read nodelist
-      nodelist.df <- read.csv2(file = nodelist.filename, header = TRUE, stringsAsFactors = FALSE)
+      #nodelist.df <- read.csv2(file = nodelist.filename, header = TRUE, stringsAsFactors = FALSE)
       #unique User-tweeted list
-      nodelist2.df <- nodelist.df %>% distinct(user.from.name)
-      
-      
-      tweetsFiltered.df <- merge(x = nodelist2.df, y = tweets.df,  by.x = "user.from.name", by.y = "screen_name", all.x = TRUE)
+      #nodelist2.df <- nodelist.df %>% distinct(user.from.name)
+      #tweetsFiltered.df <- merge(x = nodelist2.df, y = tweets.df,  by.x = "user.from.name", by.y = "screen_name", all.x = TRUE)
 
 
 
@@ -43,55 +41,58 @@ tweets.text <- tweets.df[,"text"]
 
 
 # Extract all the Hashtags per Tweet
-tweets.hashtags  <- str_extract_all(tweets.text,"[#]{1}(\\w+)")
+tweets.hashtags <- str_extract_all(tweets.text,"[#]{1}(\\w+)")
 #Remove empty vectors(entries) in hashtag list
-tweets.hashtags<-tweets.hashtags[lapply(tweets.hashtags,length)>0]
+tweets.hashtags <- tweets.hashtags[lapply(tweets.hashtags,length)>0]
 # Extract tweet ids which include a hashtag
 tweets.hashtags.ids <- grep("[#]{1}(\\w+)",tweets.text)
-# Extract usernames from tweet dataframe
+# Extract UserIDs from tweet dataframe
 #user.originaltw<-tweetsFiltered.df["user.from.name"]
 user.originaltw<-tweets.df["user_id_str"]
-
 head(tweets.hashtags)
-        
-        SumHashtags<-0
-        for (i in 1:length(tweets.hashtags))
-        {
-          SumHashtags<-SumHashtags+length(tweets.hashtags[[i]])
-        }
-        UserHashtagTable <- as.table(matrix("", ncol = 2, nrow = SumHashtags))  
-        
-        colnames(UserHashtagTable) <- c("User", "Hashtag")
-        head(UserHashtagTable)
-        
-        rownu<-0
-        
-        for (i in 1:length(tweets.hashtags))
-        {
-          for (j in 1:length(tweets.hashtags[[i]]))
-          {
-            rownu<-rownu+1
-            UserHashtagTable[rownu,1]<-as.character(user.originaltw[tweets.hashtags.ids[i],1])
-            UserHashtagTable[rownu,2]<-tweets.hashtags[[i]][j]
-          }
-        }
-        head(UserHashtagTable)
 
+#Calculate Sum of all used Hashtags, required for the dimension of table creation
+SumHashtags<-0
+for (i in 1:length(tweets.hashtags))
+{
+  SumHashtags<-SumHashtags+length(tweets.hashtags[[i]])
+}
+
+
+#Create Table
+UserHashtagTable <- as.table(matrix("", ncol = 2, nrow = SumHashtags))  
+colnames(UserHashtagTable) <- c("User", "Hashtag")
+head(UserHashtagTable)
+
+#fill table, with User_id_str and used hashtag
+#Result: One Row for each hashtag, assigned to the user
+rownu<-0
+for (i in 1:length(tweets.hashtags))
+{
+  for (j in 1:length(tweets.hashtags[[i]]))
+  {
+    rownu<-rownu+1
+    UserHashtagTable[rownu,1]<-as.character(user.originaltw[tweets.hashtags.ids[i],1])
+    UserHashtagTable[rownu,2]<-tweets.hashtags[[i]][j]
+  }
+}
+head(UserHashtagTable)
+#convert Table to DataFrame
 UserHashtagTableAsDF<-as.data.frame.matrix(UserHashtagTable)
 
+#Uppercase of all hashtags
 UserHashtagTableAsDF[,2] = toupper(UserHashtagTableAsDF[,2])
+
+#Group by 2 columns (User, Hashtag) and count lines(=Frequency)
 #if:Error in n() : This function should not be called directly
 #detach()
-library(dplyr)
+#library(dplyr)
 grp_cols <- c("User","Hashtag")
-
 # Convert character vector to list of symbols
 dots <- lapply(grp_cols, as.symbol)
-UHF<-UserHashtagTableAsDF %>%
-  group_by_(.dots=dots) %>%
-  summarise(n = n())
-
-Hashtags.df<-as.data.frame(unlist(tweets.hashtags))
-
-save(UHF, file = "/users/flori/fimecho/UserHashtagFrequency.RData")
-save(Hashtags.df, file = "/users/flori/fimecho/Hashtags.RData")
+UHF<-UserHashtagTableAsDF %>%  group_by_(.dots=dots) %>%  summarise(n = n())
+#Save Used Hashtags to Data Frame
+Hashtags.df<-as.data.frame(toupper(unlist(tweets.hashtags)))
+#Save as .RData
+save(UHF, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagFrequency.RData")
+save(Hashtags.df, file = "/users/flori/fimecho/Data/Filtered Data/Hashtags.RData")

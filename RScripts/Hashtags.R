@@ -81,7 +81,23 @@ head(UserHashtagTable)
 UserHashtagTableAsDF<-as.data.frame.matrix(UserHashtagTable)
 
 #Uppercase of all hashtags
-UserHashtagTableAsDF[,2] = toupper(UserHashtagTableAsDF[,2])
+UserHashtagTableAsDF[,"Hashtag"] = toupper(UserHashtagTableAsDF[,"Hashtag"])
+UserHashtagTableAsDF2<-UserHashtagTableAsDF
+##RegEx Matches,encoding based problems
+#HAY%-->#HAYIR
+UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern = "((#HAY).*)", replacement = "#HAYIR")
+#EVE%-->#EVET
+UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern = "((#EVE).*)", replacement = "#EVET")
+#TURKISHREF%, #TUERKEIREF%, #TURKEYREF% -->#TURKEYREFERENDUM
+UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern = "((#TURKISHREF).*)|((#TUERKEIREF).*)|((#TURKEYREF).*)", replacement = "#TURKEYREFERENDUM")
+#TURKIYE, #TÜRKEI, #TUERKEI, #TURQUIE, #TÜRKIYE -->#TURKEY
+UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern = "((#TURKIYE))|((#TÜRKEI))|((#TUERKEI))|((#TURQUIE))|((#TÜRKIYE)) ", replacement = "#TURKEY")
+
+
+#REFR%, #REFER% -->#REFERENDUM
+UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern ="((#REFR).*)|((#REFER).*)", replacement = "#REFERENDUM")
+#TURKEYSC%-->#TURKEYSCHOICE
+UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern = "((#TURKEYSC).*)", replacement = "#TURKEYSCHOICE")
 
 #Group by 2 columns (User, Hashtag) and count lines(=Frequency)
 #if:Error in n() : This function should not be called directly
@@ -91,8 +107,26 @@ grp_cols <- c("User","Hashtag")
 # Convert character vector to list of symbols
 dots <- lapply(grp_cols, as.symbol)
 UHF<-UserHashtagTableAsDF %>%  group_by_(.dots=dots) %>%  summarise(n = n())
+UHF2<-UserHashtagTableAsDF2 %>%  group_by_(.dots=dots) %>%  summarise(n = n())
+
 #Save Used Hashtags to Data Frame
 Hashtags.df<-as.data.frame(toupper(unlist(tweets.hashtags)))
+colnames(Hashtags.df)<-"Hashtag"
+#HAY%-->#HAYIR
+Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#HAY).*)", replacement = "#HAYIR")
+#EVE%-->#EVET
+Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#EVE).*)", replacement = "#EVET")
+#TURKISHREF%, #TUERKEIREF%, #TURKEYREF% -->#TURKEYREFERENDUM
+Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#TURKISHREF).*)|((#TUERKEIREF).*)|((#TURKEYREF).*)", replacement = "#TURKEYREFERENDUM")
+#TURKIYE, #TÜRKEI, #TUERKEI, #TURQUIE, #TÜRKIYE -->#TURKEY
+Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#TURKIYE))|((#TÜRKEI))|((#TUERKEI))|((#TURQUIE))|((#TÜRKIYE)) ", replacement = "#TURKEY")
+
+
+#REFR%, #REFER% -->#REFERENDUM
+Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern ="((#REFR).*)|((#REFER).*)", replacement = "#REFERENDUM")
+#TURKEYSC%-->#TURKEYSCHOICE
+Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#TURKEYSC).*)", replacement = "#TURKEYSCHOICE")
 #Save as .RData
 save(UHF, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagFrequency.RData")
+save(UHF2, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagFrequency2.RData")
 save(Hashtags.df, file = "/users/flori/fimecho/Data/Filtered Data/Hashtags.RData")

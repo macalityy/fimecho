@@ -1,4 +1,4 @@
-
+rm(list=ls())
 
 library(igraph)
 library(dplyr)
@@ -64,7 +64,7 @@ for(i in 1:nrow(communities.df))
   
 }
 
-save(all.members.wal,file="all.members.mul.RData")
+save(all.members.mul,file="all.members.mul.RData")
 plot(c(1:1009), comm.sizes$Freq, xlab = "MultiLevel_Community", ylab = "# of Members")
 
 #########################################################################
@@ -163,9 +163,135 @@ plot(c(1:1965), comm.sizes$Freq, xlab = "Labelpropagation_Community", ylab = "# 
 
 
 
+####################################################################################
+tr.graph.d <- graph_from_data_frame(edgelist.df, directed = TRUE, vertices = vertices.df)
+
+
+##############################################################################
+# CDA directed
+#when you want to see the Processing time- system.time({Function})
+#mul.comm.d <- multilevel.community(tr.graph.d)-----not available for directed
+wal.comm.d <- walktrap.community(tr.graph.d)
+inf.comm.d <- infomap.community(tr.graph.d)
+lab.comm.d <- label.propagation.community(tr.graph.d)
+
+
+
+#########################################################################
+#walktrap CDA directed
+comm.sizes <- sizes(wal.comm.d)
+comm.sizes <- as.data.frame(comm.sizes)
+
+comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
+comm.membership <- membership(wal.comm.d)
+
+communities <- communities(wal.comm.d)
+communities.df <- data.frame(communities)
+communities.df$community <- c(1:1863)
+
+all.members.wal.d <- data.frame()
+
+for(i in 1:nrow(communities.df))
+{
+  row <- communities.df[i, ]
+  members <- unlist(row$communities)
+  
+  comm.no <- as.list(1:length(members))
+  comm.no[] <- row$community
+  
+  community <- cbind(comm.no, members)
+  
+  all.members.wal.d <- rbind(all.members.wal.d, community)                     
+  
+}
+
+save(all.members.wal.d,file="all.members.wal.d.RData")
+plot(c(1:1863), comm.sizes$Freq, xlab = "Walktrap_Community_directed", ylab = "# of Members")
+
+#########################################################################
+#infomap CDA
+comm.sizes <- sizes(inf.comm.d)
+comm.sizes <- as.data.frame(comm.sizes)
+
+comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
+comm.membership <- membership(inf.comm.d)
+
+communities <- communities(inf.comm.d)
+communities.df <- data.frame(communities)
+communities.df$community <- c(1:7240)
+
+all.members.inf.d <- data.frame()
+
+for(i in 1:nrow(communities.df))
+{
+  row <- communities.df[i, ]
+  members <- unlist(row$communities)
+  
+  comm.no <- as.list(1:length(members))
+  comm.no[] <- row$community
+  
+  community <- cbind(comm.no, members)
+  
+  all.members.inf.d <- rbind(all.members.inf.d, community)                     
+  
+}
+
+save(all.members.inf.d,file="all.members.inf.d.RData")
+plot(c(1:7240), comm.sizes$Freq, xlab = "infomap_Community.directed", ylab = "# of Members")
+
+
+#########################################################################
+#labelpropagation CDA
+comm.sizes <- sizes(lab.comm.d)
+comm.sizes <- as.data.frame(comm.sizes)
+
+comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
+comm.membership <- membership(lab.comm.d)
+
+communities <- communities(lab.comm.d)
+communities.df <- data.frame(communities)
+communities.df$community <- c(1:1965)
+
+all.members.lab <- data.frame()
+
+for(i in 1:nrow(communities.df))
+{
+  row <- communities.df[i, ]
+  members <- unlist(row$communities)
+  
+  comm.no <- as.list(1:length(members))
+  comm.no[] <- row$community
+  
+  community <- cbind(comm.no, members)
+  
+  all.members.lab.d <- rbind(all.members.lab.d, community)                     
+  
+}
+
+save(all.members.lab.d,file="all.members.lab.d.RData")
+plot(c(1:1965), comm.sizes$Freq, xlab = "Labelpropagation_Community_directed", ylab = "# of Members")
+
 
 
 ##################################################################################
 #User_MUL_WAL_LAB_INF Tabelle machen 
+
+load("C:/Users/User/Dropbox/FIM_Seminar_Bubble/20_Content/Community Detection/all.members.inf.RData")
+load("C:/Users/User/Dropbox/FIM_Seminar_Bubble/20_Content/Community Detection/all.members.wal.RData")
+load("C:/Users/User/Dropbox/FIM_Seminar_Bubble/20_Content/Community Detection/all.members.lab.RData")
+load("C:/Users/User/Dropbox/FIM_Seminar_Bubble/20_Content/Community Detection/all.members.mul.RData")
+ 
+allvertices<-tweets_sc_st.df
+colnames(allvertices)<-c("username","user_id_string")
+colnames(all.members.inf)<-c("comm.no.inf","user_id_string")
+colnames(all.members.lab)<-c("comm.no.lab","user_id_string")
+colnames(all.members.mul)<-c("comm.no.mul","user_id_string")
+colnames(all.members.wal)<-c("comm.no.wal","user_id_string")
+
+
+allvertices<-merge(allvertices,all.members.inf,by= "user_id_string", all.x=TRUE, all.y = FALSE)
+allvertices<-merge(allvertices,all.members.lab,by= "user_id_string", all.x=TRUE, all.y = FALSE)
+allvertices<-merge(allvertices,all.members.mul,by= "user_id_string", all.x=TRUE, all.y = FALSE)
+allvertices<-merge(allvertices,all.members.wal,by= "user_id_string", all.x=TRUE, all.y = FALSE)
 
 

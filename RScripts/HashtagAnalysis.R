@@ -87,7 +87,6 @@ RelFreqMerge.df<-subset(RelFreq.df[, c("User", "Hashtag")])
 vertices.df<- merge(x=vertices.df, y=RelFreqMerge.df, by.x="usr_Id", by.y = "User", all.x=TRUE)
 save(vertices.df, file = "/users/flori/fimecho/Data/Filtered Data/Vertices.RData")
 
-
 #####All HASHTAGs Analysis Start###########################################################################################
 
 #Necessary if not Done already
@@ -98,6 +97,7 @@ Hashtags.df<-as.data.frame(table(Hashtags.df))
 Hashtags.df<-Hashtags.df[Hashtags.df$Freq>100,]
 
 hist(Hashtags.df$Freq)
-barplot(Hashtags.df$Freq, names.arg = Hashtags.df$Hashtags.df)
+par(mai=c(0.5,1.5,0,0.1))
+barplot(Hashtags.df$Freq, names.arg = Hashtags.df$Hashtags.df, horiz=TRUE, las=1, cex.names=0.4)
 
 plot(Hashtags.df)

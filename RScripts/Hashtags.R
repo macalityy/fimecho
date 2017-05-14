@@ -112,21 +112,21 @@ UHF2<-UserHashtagTableAsDF2 %>%  group_by_(.dots=dots) %>%  summarise(n = n())
 #Save Used Hashtags to Data Frame
 Hashtags.df<-as.data.frame(toupper(unlist(tweets.hashtags)))
 colnames(Hashtags.df)<-"Hashtag"
+Hashtags2.df<-Hashtags.df
 #HAY%-->#HAYIR
-Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#HAY).*)", replacement = "#HAYIR")
+Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern = "((#HAY).*)", replacement = "#HAYIR")
 #EVE%-->#EVET
-Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#EVE).*)", replacement = "#EVET")
+Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern = "((#EVE).*)", replacement = "#EVET")
 #TURKISHREF%, #TUERKEIREF%, #TURKEYREF% -->#TURKEYREFERENDUM
-Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#TURKISHREF).*)|((#TUERKEIREF).*)|((#TURKEYREF).*)", replacement = "#TURKEYREFERENDUM")
+Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern = "((#TURKISHREF).*)|((#TUERKEIREF).*)|((#TURKEYREF).*)", replacement = "#TURKEYREFERENDUM")
 #TURKIYE, #TÜRKEI, #TUERKEI, #TURQUIE, #TÜRKIYE -->#TURKEY
-Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#TURKIYE))|((#TÜRKEI))|((#TUERKEI))|((#TURQUIE))|((#TÜRKIYE)) ", replacement = "#TURKEY")
-
-
+Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern = "((#TURKIYE))|((#TÜRKEI))|((#TUERKEI))|((#TURQUIE))|((#TÜRKIYE)) ", replacement = "#TURKEY")
 #REFR%, #REFER% -->#REFERENDUM
-Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern ="((#REFR).*)|((#REFER).*)", replacement = "#REFERENDUM")
+Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern ="((#REFR).*)|((#REFER).*)", replacement = "#REFERENDUM")
 #TURKEYSC%-->#TURKEYSCHOICE
-Hashtags.df[,"Hashtag"] <- gsub(Hashtags.df[,"Hashtag"],pattern = "((#TURKEYSC).*)", replacement = "#TURKEYSCHOICE")
+Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern = "((#TURKEYSC).*)", replacement = "#TURKEYSCHOICE")
 #Save as .RData
 save(UHF, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagFrequency.RData")
 save(UHF2, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagFrequency2.RData")
 save(Hashtags.df, file = "/users/flori/fimecho/Data/Filtered Data/Hashtags.RData")
+save(Hashtags2.df, file = "/users/flori/fimecho/Data/Filtered Data/Hashtags2.RData")

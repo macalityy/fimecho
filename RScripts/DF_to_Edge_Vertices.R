@@ -9,6 +9,7 @@
 # Load Libraries
 library(plyr); library(dplyr)
 library(stringr)
+workingDT<-getwd()
 
 load("fimecho/Data/Turkey/TweetsDF.RData")
 
@@ -122,9 +123,9 @@ save(edgelist.df, file = "fimecho/Data/Turkey/AllEdges.RData")
 
 ### SAMPLE SET
 knoten.df <- sample_frac(vertices.df, size = 0.1)
-kanten.df <- subset(edgelist.df, (edgelist.df$Source %in% knoten.df$Id) &
-                                 (edgelist.df$Target %in% knoten.df$Id))
+kanten.df <- subset(edgelist.df, (edgelist.df$Source %in% knoten.df$usr_Id) &
+                                 (edgelist.df$Target %in% knoten.df$usr_Id))
 
-write.csv2(knoten.df, file = "fimecho/Data/Turkey/SampleKnoten.csv")
-write.csv2(kanten.df, file = "fimecho/Data/Turkey/SampleKanten.csv")
+write.csv2(knoten.df, file = paste(c(workingDT, "/Data/Turkey/SampleKnoten.csv"), collapse = ""))
+write.csv2(kanten.df, file =  paste(c(workingDT, "/Data/Turkey/SampleKanten.csv"), collapse = ""))
 

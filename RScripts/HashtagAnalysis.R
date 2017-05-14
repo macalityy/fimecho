@@ -5,6 +5,7 @@ library(streamR)
 library(plyr)
 library(dplyr)
 library(reshape2)
+workingDT<-getwd()
 
 ##Filter for Maximum Hashtag-Frequency
 ##Read CSV File into UserHashtagFrequency Dataframe (UHF)
@@ -85,7 +86,8 @@ save(RelFreq.df, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagRela
 
 RelFreqMerge.df<-subset(RelFreq.df[, c("User", "Hashtag")])
 vertices.df<- merge(x=vertices.df, y=RelFreqMerge.df, by.x="usr_Id", by.y = "User", all.x=TRUE)
-save(vertices.df, file = "/users/flori/fimecho/Data/Filtered Data/VerticeswHashtags2.RData")
+save(vertices.df, file = paste(c(workingDT, "/Data/Filtered Data/VerticeswHashtags2.RData"), collapse = ""))
+
 
 #####All HASHTAGs Analysis Start###########################################################################################
 
@@ -94,7 +96,7 @@ save(vertices.df, file = "/users/flori/fimecho/Data/Filtered Data/VerticeswHasht
 Hashtags.df<-as.data.frame(table(Hashtags.df))
 ##Extract list of unique hashtags
 HashtagsUnique<-Hashtags.df[,"Hashtags.df"]
-write.csv2(HashtagsUnique, file="/users/flori/fimecho/Data/Filtered Data/Hashtags_Unique2.csv")
+write.csv2(HashtagsUnique, file=paste(c(workingDT, "/Data/Filtered Data/Hashtags_Unique2.csv"), collapse = ""))
 Hashtags.df<-Hashtags.df[Hashtags.df$Freq>100,]
 
 par(mai=c(0.5,1.5,0,0.1))

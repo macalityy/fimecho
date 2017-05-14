@@ -4,10 +4,10 @@ library(igraph)
 library(streamR)
 library(plyr)
 library(dplyr)
-path<-"/users/flori/fimecho/Data/"
-file <- paste(path,"Turkey/Turkeyall.csv",sep="")
-filename.out<-paste(path,"User_HashtagTurkeyAll.csv",sep="")
-nodelist.filename <- paste(path,"KantenTurkey.csv",sep="")
+workingDT<-getwd()
+file <- paste(workingDT,"/Data/Turkey/Turkeyall.csv",sep="")
+filename.out<-paste(workingDT,"/Data/User_HashtagTurkeyAll.csv",sep="")
+nodelist.filename <- paste(workingDT,"/Data/KantenTurkey.csv",sep="")
 
 
 
@@ -126,7 +126,7 @@ Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern ="((#REFR).*)|
 #TURKEYSC%-->#TURKEYSCHOICE
 Hashtags2.df[,"Hashtag"] <- gsub(Hashtags2.df[,"Hashtag"],pattern = "((#TURKEYSC).*)", replacement = "#TURKEYSCHOICE")
 #Save as .RData
-save(UHF, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagFrequency.RData")
-save(UHF2, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagFrequency2.RData")
-save(Hashtags.df, file = "/users/flori/fimecho/Data/Filtered Data/Hashtags.RData")
-save(Hashtags2.df, file = "/users/flori/fimecho/Data/Filtered Data/Hashtags2.RData")
+save(UHF, file = paste(c(workingDT, "/Data/Filtered Data/UserHashtagFrequency.RData"), collapse = ""))
+save(UHF2, file = paste(c(workingDT, "/Data/Filtered Data/UserHashtagFrequency2.RData"), collapse = ""))
+save(Hashtags.df, file = paste(c(workingDT, "/Data/Filtered Data/Hashtags.RData"), collapse = ""))
+save(Hashtags2.df, file = paste(c(workingDT, "/Data/Filtered Data/Hashtags2.RData"), collapse = ""))

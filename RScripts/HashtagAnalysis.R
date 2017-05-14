@@ -22,9 +22,9 @@ Users.df <- UHF %>% distinct(User)
 UHTop1Freq.df <- UHF %>% group_by(User)%>% top_n(n = 1, wt= n)
 
 
-##Remove one time used hashtags
-UHFreqFiltered.df <- subset(UHF, n!="1")
-UHTop1FreqFiltered.df <- UHFreqFiltered.df %>% group_by(User) %>% top_n(n = 1, wt= freq)
+##OPTIONAL:Remove one time used hashtags
+#UHFreqFiltered.df <- subset(UHF, n!="1")
+#UHTop1FreqFiltered.df <- UHFreqFiltered.df %>% group_by(User) %>% top_n(n = 1, wt= freq)
 
 #Remove Hashtag-Frequencies of not selected hashtags
 #Only Selected Hashtag Frequencies are relevant
@@ -70,18 +70,18 @@ RelFreq.df$Hashtag<-colnames(RelFreq.df[,2:8])[max.col(RelFreq.df[,2:8],ties.met
 
 ##Additional Constraints: If Users most freqently used hashtag <=50% relative frequency -->uses more than one hashtag
 for(i in 1:nrow(RelFreq.df)){
-  if(RelFreq.df[i,11]<= 0.5){
-    RelFreq.df[i,10]<-NA
+  if(RelFreq.df[i,"max"]<= 0.5){
+    RelFreq.df[i,"Hashtag"]<-NA
   }
 }
 ##If users has used < 2 hashtags in total Hashtag also removed
 for(i in 1:nrow(RelFreq.df)){
-  if(RelFreq.df[i,9]<2){
-    RelFreq.df[i,10]<-NA
+  if(RelFreq.df[i,"Sum"]<2){
+    RelFreq.df[i,"Hashtag"]<-NA
   }
 }
 
-save(RelFreq.df, file = "/users/flori/fimecho/UserHashtagRelativeFrequency.RData")
+save(RelFreq.df, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagRelativeFrequency.RData")
 #####All HASHTAGs Analysis Start
 
 #Necessary if not Done already

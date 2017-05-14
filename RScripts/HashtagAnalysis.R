@@ -80,9 +80,15 @@ for(i in 1:nrow(RelFreq.df)){
     RelFreq.df[i,"Hashtag"]<-NA
   }
 }
-
 save(RelFreq.df, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagRelativeFrequency.RData")
-#####All HASHTAGs Analysis Start
+
+
+RelFreqMerge.df<-subset(RelFreq.df[, c("User", "Hashtag")])
+vertices.df<- merge(x=vertices.df, y=RelFreqMerge.df, by.x="usr_Id", by.y = "User", all.x=TRUE)
+save(vertices.df, file = "/users/flori/fimecho/Data/Filtered Data/Vertices.RData")
+
+
+#####All HASHTAGs Analysis Start###########################################################################################
 
 #Necessary if not Done already
 #Hashtags.df <- mutate_each(Hashtags.df, funs(toupper))

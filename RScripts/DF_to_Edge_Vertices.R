@@ -1,3 +1,11 @@
+######################################################################
+######################################################################
+# This script is being used in order to convert all tweets out of a
+# data frame to an edgelist and list of vertices respectively
+# At the end one can draw a sample out of the data for faster processing
+######################################################################
+######################################################################
+
 # Load Libraries
 library(plyr); library(dplyr)
 library(stringr)
@@ -43,11 +51,14 @@ retweets.ids  <- grep("(RT)(?:\\b\\W@\\w+)", tweets.df$text, ignore.case = TRUE 
 user.originaltw <- as.list( 1:length(retweets.ids))
 user.retweet <- as.list(1:length(retweets.ids))
 
+# from the data frame, we only need the column text to find out which rows are retweets
+tweets.text <- tweets.df[,"text"]
+
 ## User Identification in Retweets ##
 for (i in 1:length(retweets.ids))
 {
   #get tweet text
-  tweet.text <- tweets.df$text[[retweets.ids[i]]]
+  tweet.text <- tweets.text[[retweets.ids[i]]]
   #find user who posted original tweet
   tweet.original.poster <- str_extract_all(tweet.text, "(RT)(?:\\b\\W@\\w+)" )
   
@@ -55,8 +66,10 @@ for (i in 1:length(retweets.ids))
   user.originaltw[[i]] = gsub("(RT @)", "", tweet.original.poster, ignore.case = TRUE )
   
   #save user who retweeted in vector
-  user.retweet [[i]] = tweets.df[retweets.ids[i],"screen_name"]
+  user.retweet[[i]] = tweets.df[retweets.ids[i],"screen_name"]
 }
+
+rm(tweets.text)
 
 user.originaltw <- unlist(user.originaltw)
 user.retweet <- unlist(user.retweet)

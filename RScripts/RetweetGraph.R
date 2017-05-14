@@ -1,3 +1,10 @@
+######################################################################
+######################################################################
+# This script was used for our first Gephi visualization
+######################################################################
+######################################################################
+
+
 # Load Libraries
 library(stringr)
 library(igraph)
@@ -114,6 +121,7 @@ if( filter.value > 0)
   
   
 ############################################
+  # OPTIONAL
   ### update the ties.in and ties.out ###
   user.originaltw.freq <- count(edgelist.df$user.originaltw)
   user.retweet.freq <- count(edgelist.df$user.retweet)

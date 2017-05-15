@@ -32,6 +32,9 @@ for(i in 1:length(to.translate))
   }
 }
 
+######################## END OF TRANSLATION
+
+
 
 # first of all we need to prepare the tweet texts
 texts <- as.character(tweets.df$text)

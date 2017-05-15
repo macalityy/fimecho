@@ -29,7 +29,14 @@ UHTop1Freq.df <- UHF %>% group_by(User)%>% top_n(n = 1, wt= n)
 
 #Remove Hashtag-Frequencies of not selected hashtags
 #Only Selected Hashtag Frequencies are relevant
-UHFreqFilHashtags.df <- subset(UHF2, 
+UHFreqFilHashtags2.df <- subset(UHF2, 
+                               Hashtag=="#HAYIR"|
+                                 Hashtag== "#TURKEYREFERENDUM"|
+                                 Hashtag=="#REFERENDUM"|
+                                 Hashtag=="#TURKEY"|
+                                 Hashtag=="#TURKEYSCHOICE"|
+                                 Hashtag=="#EVET")
+UHFreqFilHashtags.df <- subset(UHF, 
                                Hashtag=="#HAYIR"|
                                  Hashtag== "#TURKEYREFERENDUM"|
                                  Hashtag=="#REFERENDUM"|
@@ -38,14 +45,19 @@ UHFreqFilHashtags.df <- subset(UHF2,
                                  Hashtag=="#EVET")
 #Frequency of Use of Selected Hashtags 
 HashtagsFilteredFrequency <- aggregate(UHFreqFilHashtags.df$n~UHFreqFilHashtags.df$Hashtag, UHFreqFilHashtags.df, sum)
+HashtagsFilteredFrequency2 <- aggregate(UHFreqFilHashtags2.df$n~UHFreqFilHashtags2.df$Hashtag, UHFreqFilHashtags2.df, sum)
+HashtagsFilteredFrequency$After<-HashtagsFilteredFrequency2[,2]
+HashtagsFilteredFrequency
+colnames(HashtagsFilteredFrequency)<-c("Hashtag", "Before", "After")
 
 #UNTEN-FALSCH n()->Counts number of observations not aggregates Number in Column n
 #Frequency of Use of Selected Hashtags 
 #HashtagsFilteredFrequency<-UHFreqFilHashtags.df%>%  group_by_(.dots="Hashtag") %>%  summarise(n = n())
 
 #barplot of hashtagusage
+b<-barplot(as.matrix(HashtagsFilteredFrequency[,-1]),beside=TRUE)
 b<-barplot(HashtagsFilteredFrequency$`UHFreqFilHashtags.df$n`, names.arg = HashtagsFilteredFrequency$`UHFreqFilHashtags.df$Hashtag`, ylim = c(0,300000))
-text(x=b, y= HashtagsFilteredFrequency$`UHFreqFilHashtags.df$n`, labels=as.character(HashtagsFilteredFrequency$`UHFreqFilHashtags.df$n`))
+#text(x=b, y=HashtagsFilteredFrequency$Hashtag, labels=as.character(c(HashtagsFilteredFrequency$Before, HashtagsFilteredFrequency$After)))
 
 #Remove X Column (created by Write out and Read in as csv-File)
 #not Necessary with Use of .RData File

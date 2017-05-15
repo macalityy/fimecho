@@ -92,8 +92,6 @@ UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],patt
 UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern = "((#TURKISHREF).*)|((#TUERKEIREF).*)|((#TURKEYREF).*)", replacement = "#TURKEYREFERENDUM")
 #TURKIYE, #TÜRKEI, #TUERKEI, #TURQUIE, #TÜRKIYE -->#TURKEY
 UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern = "((#TURKIYE))|((#TÜRKEI))|((#TUERKEI))|((#TURQUIE))|((#TÜRKIYE)) ", replacement = "#TURKEY")
-
-
 #REFR%, #REFER% -->#REFERENDUM
 UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],pattern ="((#REFR).*)|((#REFER).*)", replacement = "#REFERENDUM")
 #TURKEYSC%-->#TURKEYSCHOICE

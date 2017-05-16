@@ -4,16 +4,44 @@
 ############################################################
 ############################################################
 
+library("dplyr")
 library("httr")
 library("tm")
 
 load("Data/Seminar/Tweets.RData")
 
-###### TRANSLATION VIA https://tech.yandex.com/translate/
-
 # get IDs of those tweets which are not english
 to.translate <- which(tweets.df$lang != "en")
 
+################################################################
+###### TRANSLATION VIA https://api.microsofttranslator.com/V2/Http.svc/Translate
+
+# first restrieve an access token
+url.token <- "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+
+param.token <- list("Subscription-Key" = "b891aa65c63944dab2cce6d65f4e6ae5")
+
+token.req <- POST(url.token, query = param.token)
+
+if (http_error( token.req ) == FALSE && status_code( token.req )) {
+  microsoft.token <- content( token.req )
+}
+
+
+url <- "https://api.microsofttranslator.com/V2/Http.svc/Translate"
+
+parameters <- list(appid = "", to = "en", text ="")
+parameters$appid <- as.character(paste(c("Bearer", " ", microsoft.token), collapse = ""))
+
+parameters$text <- "Ich bin ein Berliner"
+
+request <- POST(url, query = parameters)
+
+################################################################
+
+
+################################################################
+###### TRANSLATION VIA https://tech.yandex.com/translate/
 # define url and basic parameters
 url <- "https://translate.yandex.net/api/v1.5/tr.json/translate"
 parameters <- list(key = key, lang = "en", text ="")
@@ -31,13 +59,15 @@ for(i in 1:length(to.translate))
     tw[i, "translation"] <- content(request)$text
   }
 }
-
 ######################## END OF TRANSLATION
+################################################################
+
+
 
 
 
 # first of all we need to prepare the tweet texts
-texts <- as.character(tweets.df$text)
+texts <- as.character(tweets.df[tweets.df$lang != "en","text"])
 
 # only original posts
 retweets  <- grepl("(RT)(?:\\b\\W@\\w+)", tweets.df$text, ignore.case = TRUE )

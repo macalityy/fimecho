@@ -3,9 +3,10 @@ library(stringr)
 library(plyr)
 library(dplyr)
 
-file <- paste(path,"Turkey/Turkeyall.csv",sep="")
-filename.out<-paste(path,"User_HashtagTurkeyAll.csv",sep="")
-nodelist.filename <- paste(path,"KantenTurkey.csv",sep="")
+workingDT<-getwd()
+file <- paste(workingDT,"/Data/Turkey/Turkeyall.csv",sep="")
+filename.out<-paste(workingDT,"/Data/User_HashtagTurkeyAll.csv",sep="")
+nodelist.filename <- paste(workingDT,"/Data/KantenTurkey.csv",sep="")
 
 
 
@@ -63,3 +64,10 @@ UsersBefore.df <- tweetsBefore.df %>% distinct(user_id_str)
 UsersAfter.df <- tweetsAfter.df %>% distinct(user_id_str)
 UsersAfterWithBefore.df<-subset(UsersAfter.df, (UsersAfter.df$user_id_str %in% UsersBefore.df$user_id_str))
 
+
+UserFrequencies.df<-count(UsersTotal.df)
+UserFrequencies.df$Before<-count(UsersBefore.df)
+UserFrequencies.df$After<-count(UsersAfter.df)
+UserFrequencies.df$AfterMergeBefore<-count(UsersAfterWithBefore.df)
+colnames(UserFrequencies.df)[1]<-"Total"
+save(UserFrequencies.df, file = paste(c(workingDT, "/Data/Filtered Data/UserFrequencies.RData"), collapse = ""))

@@ -12,16 +12,13 @@ workingDT<-getwd()
 #UHF <- read.csv2(file = "/users/flori/fimecho/Data/UHFreq_TurkeyAll.csv", header = TRUE, stringsAsFactors = FALSE)
 #tweets.hashtags <- read.csv2(file = "/users/flori/fimecho/Data/Hashtags_TurkeyAll.csv", header = TRUE, stringsAsFactors = FALSE)
 
-
-
 ##Identification of unique users
 Users.df <- UHF %>% distinct(User)
 
-
+##Abolute maximum used hashtag per user
 ##Select Maximum 1 used hashtags per user
 ##Returns Dataframe with most frequently used hashtag per user (Multiple Maximum HashtagsFrequency possible)
-UHTop1Freq.df <- UHF %>% group_by(User)%>% top_n(n = 1, wt= n)
-
+#UHTop1Freq.df <- UHF %>% group_by(User)%>% top_n(n = 1, wt= n)
 
 ##OPTIONAL:Remove one time used hashtags
 #UHFreqFiltered.df <- subset(UHF, n!="1")
@@ -43,25 +40,24 @@ UHFreqFilHashtags.df <- subset(UHF,
                                  Hashtag=="#TURKEY"|
                                  Hashtag=="#TURKEYSCHOICE"|
                                  Hashtag=="#EVET")
-#Frequency of Use of Selected Hashtags 
+#barplot of hashtag usage
 HashtagsFilteredFrequency <- aggregate(UHFreqFilHashtags.df$n~UHFreqFilHashtags.df$Hashtag, UHFreqFilHashtags.df, sum)
 HashtagsFilteredFrequency2 <- aggregate(UHFreqFilHashtags2.df$n~UHFreqFilHashtags2.df$Hashtag, UHFreqFilHashtags2.df, sum)
 HashtagsFilteredFrequency$After<-HashtagsFilteredFrequency2[,2]
-HashtagsFilteredFrequency
+rownames(HashtagsFilteredFrequency)<- HashtagsFilteredFrequency$Hashtag
 colnames(HashtagsFilteredFrequency)<-c("Hashtag", "Before", "After")
-
+HashtagsFilteredFrequency<- HashtagsFilteredFrequency[,-1]
+par(mar=c(10,8,1,1))
+barplot(t(HashtagsFilteredFrequency), beside=T,  
+        cex.names=1, las=2, col=c("darkblue","red"), 
+        legend = rownames(t(HashtagsFilteredFrequency)), 
+        ylab="Total Frequence of Hashtag", 
+        mgp=c(4,0.5,0))
+box(bty="l")
+ 
 #UNTEN-FALSCH n()->Counts number of observations not aggregates Number in Column n
 #Frequency of Use of Selected Hashtags 
 #HashtagsFilteredFrequency<-UHFreqFilHashtags.df%>%  group_by_(.dots="Hashtag") %>%  summarise(n = n())
-
-#barplot of hashtagusage
-b<-barplot(as.matrix(HashtagsFilteredFrequency[,-1]),beside=TRUE)
-b<-barplot(HashtagsFilteredFrequency$`UHFreqFilHashtags.df$n`, names.arg = HashtagsFilteredFrequency$`UHFreqFilHashtags.df$Hashtag`, ylim = c(0,300000))
-#text(x=b, y=HashtagsFilteredFrequency$Hashtag, labels=as.character(c(HashtagsFilteredFrequency$Before, HashtagsFilteredFrequency$After)))
-
-#Remove X Column (created by Write out and Read in as csv-File)
-#not Necessary with Use of .RData File
-#UHFreqFilHashtags.df <- subset(UHFreqFilHashtags.df, select = c(User, Hashtag,n))
 
 #Transpose Matrix,add one column for each hashtag, count frequency
 SelectedHashtagFreqperUser <- dcast(UHFreqFilHashtags.df, User ~ Hashtag, value.var="n")
@@ -95,7 +91,7 @@ for(i in 1:nrow(RelFreq.df)){
 }
 save(RelFreq.df, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagRelativeFrequency2.RData")
 
-
+#Merge Max Used Hashtag to Vertices.df Left Join
 RelFreqMerge.df<-subset(RelFreq.df[, c("User", "Hashtag")])
 vertices.df<- merge(x=vertices.df, y=RelFreqMerge.df, by.x="usr_Id", by.y = "User", all.x=TRUE)
 save(vertices.df, file = paste(c(workingDT, "/Data/Filtered Data/VerticeswHashtags2.RData"), collapse = ""))

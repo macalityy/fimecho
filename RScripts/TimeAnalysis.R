@@ -33,7 +33,6 @@ for(i in 1:nrow(DateTimeFreq.df)){
 for(i in 1:nrow(DateTimeFreq.df)){
   DateTimeFreq.df$Percent[i]=DateTimeFreq.df$Absolut[i]/sum(DateTimeFreq.df$Freq)
 }
-
 par(mar = rep(4, 4))
 barData<-DateTimeFreq.df$Freq
 y <- lineData<-DateTimeFreq.df$Percent
@@ -53,8 +52,8 @@ box()
 
 ###SUBSET of tweets.df do find user frequency
 
-tweets16After20UTC.df<-tweets.df[which(tweets.df$Date == "2017-04-16"& tweets.df$Hour >= 20), ]
-tweets16AT20UTC.df<-tweets.df[which(tweets.df$Date == "2017-04-16"& tweets.df$Hour == 20), ]
+tweets16After20UTC.df<-tweets.df[which(tweets.df$Date == "2017-04-16"& tweets.df$Hour >= 18), ]
+tweets16AT20UTC.df<-tweets.df[which(tweets.df$Date == "2017-04-16"& tweets.df$Hour == 18), ]
 tweets17.df<-tweets.df[tweets.df$Date>="2017-04-17", ]
 tweetsAfter.df<-rbind(tweets16After20UTC.df,tweets17.df)
 tweetsBefore.df<-subset(tweets.df, !(tweets.df$id_str %in% tweetsAfter.df$id_str)) 
@@ -69,5 +68,5 @@ UserFrequencies.df<-count(UsersTotal.df)
 UserFrequencies.df$Before<-count(UsersBefore.df)
 UserFrequencies.df$After<-count(UsersAfter.df)
 UserFrequencies.df$AfterMergeBefore<-count(UsersAfterWithBefore.df)
-colnames(UserFrequencies.df)[1]<-"Total"
+colnames(UserFrequencies.df)<-c("Total", "Before", "After", "AfterWBefore")
 save(UserFrequencies.df, file = paste(c(workingDT, "/Data/Filtered Data/UserFrequencies.RData"), collapse = ""))

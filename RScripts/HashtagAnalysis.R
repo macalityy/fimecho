@@ -124,14 +124,19 @@ Hashtags2.df<-Hashtags2.df[Hashtags2.df$Freq>100,]
 par(mai=c(0.5,1.5,0,0.1))
 barplot(Hashtags2.df$Freq, names.arg = Hashtags2.df$Hashtags.df, horiz=TRUE, las=1, cex.names=0.4)
 
-
+####STOP
+load(paste(c(workingDT, "/Data/Filtered Data/VerticesCommWHashtags.RData"), collapse = ""))
 #####Hashtags in Communities
-vertices.df=subset(vertices.df[, c("Id", "ml_comm", "MaxUsedHashtag")])
+###Consider just the Maximum Frequently Used Hashtag per User
+vertices.df=subset(vertices.df[, c("Id", "ml_comm","MaxUsedHashtag")])
+
+
 UserFrequency<-as.data.frame(table(vertices.df$ml_comm))
 UserFrequency<-UserFrequency[ order(-UserFrequency$Freq),]
 head(UserFrequency)
 UserFrequency<-UserFrequency[UserFrequency$Freq>=1000,]
 vertices.dfFiltered<- subset(vertices.df, (vertices.df$ml_comm %in% UserFrequency$Var1))
+#Number of Users in Communities with more than 1000 members
 table(vertices.dfFiltered$ml_comm)
 
 HashtagsPerCommunity<-as.data.frame(table(vertices.dfFiltered$ml_comm, vertices.dfFiltered$MaxUsedHashtag))
@@ -146,22 +151,66 @@ HashtagsPerCommunity2<-HashtagsPerCommunity/HashtagsPerCommunity$Sum
 HashtagsPerCommunity<- HashtagsPerCommunity[,-7]
 HashtagsPerCommunity2<- HashtagsPerCommunity2[,-7]
 
-par(mar=c(3, 3, 2, 10))
+par(mar=c(3, 6, 2, 10))
 barplot(t(HashtagsPerCommunity), beside=T,  
         cex.names=1, las=2, col = c("blue", "green", "red", "darkorange", "gold", "cyan"),
-        ylab="Total Frequence of Hashtag",
+        ylab="Absolute Frequency of \nMaxFreq-Hashtag in Community",
         legend = rownames(t(HashtagsPerCommunity)),
         mgp=c(4,0.5,0),
         args.legend = list(x = "topright", bty = "n", inset=c(-0.3, 0)))
 box(bty="l")
 
-par(mar=c(3, 3, 2, 10))
+par(mar=c(3,6, 2, 10))
 barplot(t(HashtagsPerCommunity2), beside=T,  
         cex.names=1, las=2, col = c("blue", "green", "red", "darkorange", "gold", "cyan"),
-        ylab="Total Frequence of Hashtag",
+        ylab="Relative Frequency of \nMaxFreq-Hashtag in Community",
         legend = rownames(t(HashtagsPerCommunity2)),
         mgp=c(4,0.5,0),
         args.legend = list(x = "topright", bty = "n", inset=c(-0.3, 0)))
 box(bty="l")
 
 
+###
+#####Hashtags in Communities
+###Consider each used Hashtag per User
+load(paste(c(workingDT, "/Data/Filtered Data/VerticesCommWHashtags.RData"), collapse = ""))
+vertices.df=subset(vertices.df[, c("Id", "ml_comm","ABS_EVET","ABS_HAYIR",
+                                   "ABS_REFERENDUM","ABS_TURKEY",
+                                   "ABS_TURKEYREFERENDUM","ABS_TURKEYSCHOICE")])
+colnames(vertices.df)<-c("Id","ml_comm", "EVET","HAYIR", "REFERENDUM", "TURKEY", "TURKEYREFERENDUM","TURKEYSCHOICE")
+UserFrequency<-as.data.frame(table(vertices.df$ml_comm))
+UserFrequency<-UserFrequency[ order(-UserFrequency$Freq),]
+head(UserFrequency)
+UserFrequency<-UserFrequency[UserFrequency$Freq>=1000,]
+vertices.dfFiltered<- subset(vertices.df, (vertices.df$ml_comm %in% UserFrequency$Var1))
+#Number of Users in Communities with more than 1000 members
+table(vertices.dfFiltered$ml_comm)
+vertices.dfFiltered<-vertices.dfFiltered[,-1]
+
+AllHashtagsPerCommunity<-aggregate(. ~ ml_comm, data = vertices.dfFiltered, FUN = sum)
+rownames(AllHashtagsPerCommunity)<- AllHashtagsPerCommunity$ml_comm
+AllHashtagsPerCommunity<-AllHashtagsPerCommunity[,-1]
+
+AllHashtagsPerCommunity$Sum<-rowSums(AllHashtagsPerCommunity)
+AllHashtagsPerCommunity2<-AllHashtagsPerCommunity/AllHashtagsPerCommunity$Sum
+AllHashtagsPerCommunity<- AllHashtagsPerCommunity[,-7]
+AllHashtagsPerCommunity2<- AllHashtagsPerCommunity2[,-7]
+AllHashtagsPerCommunity
+
+par(mar=c(3, 6, 2, 10))
+barplot(t(AllHashtagsPerCommunity), beside=T,  
+        cex.names=1, las=2, col = c("blue", "green", "red", "darkorange", "gold", "cyan"),
+        ylab="Absolute Frequency of \nHashtags in Community",
+        legend = rownames(t(AllHashtagsPerCommunity)),
+        mgp=c(4,0.5,0),
+        args.legend = list(x = "topright", bty = "n", inset=c(-0.3, 0)))
+box(bty="l")
+
+par(mar=c(3, 6, 2, 10))
+barplot(t(AllHashtagsPerCommunity2), beside=T,  
+        cex.names=1, las=2, col = c("blue", "green", "red", "darkorange", "gold", "cyan"),
+        ylab="Relative Frequency of \nHashtags in Community",
+        legend = rownames(t(AllHashtagsPerCommunity2)),
+        mgp=c(4,0.5,0),
+        args.legend = list(x = "topright", bty = "n", inset=c(-0.3, 0)))
+box(bty="l")

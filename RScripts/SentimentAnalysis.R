@@ -3,39 +3,118 @@
 # This script is used for Sentiment Analysis
 ############################################################
 ############################################################
+save(tweets.after, file = "translations.RData")
+
 
 library("dplyr")
 library("httr")
+library("xml2")
 library("tm")
 
+
 load("Data/Seminar/Tweets.RData")
+save(tweets.df, file = "Data/Seminar/Tweets.RData")
+
+# get rid of tweets older than 16.04.2017
+tweets.after <- subset( tweets.df, format( strptime( tweets.df$created_at,
+                                                      "%a %b %d %H:%M:%S %z %Y",
+                                                      tz="GMT"),'%d') == 16 )
+                       
+# now either they are tweeted on 16.04.2017 before 20:00
+# or are not from 16.04.2017
+tweets.after <- subset( tweets.after, ( format( strptime( tweets.after$created_at,
+                                          "%a %b %d %H:%M:%S %z %Y",
+                                          tz = "GMT" ),'%d' ) == 16 
+                                      & format( strptime( tweets.after$created_at,
+                                          "%a %b %d %H:%M:%S %z %Y",
+                                          tz = "GMT" ),'%H' ) < 18 )
+                                      | format( strptime( tweets.after$created_at,
+                                          "%a %b %d %H:%M:%S %z %Y",
+                                          tz = "GMT" ),'%d' ) > 16 )
+
+
+tweets.after <- subset( tweets.after, format( strptime( tweets.after$created_at,
+                                                            "%a %b %d %H:%M:%S %z %Y",
+                                                            tz = "GMT" ),'%H' ) >= 18 )
+
 
 # get IDs of those tweets which are not english
-to.translate <- which(tweets.df$lang != "en")
+to.translate <- which(tweets.after$lang != "en")
+#################################################################
+#################################################################
+if ( difftime(Sys.time(), token.time, units = "secs") > 540 ) {
+  token.req <- POST(url.token, query = param.token)
+  if (http_error( token.req ) == FALSE && status_code( token.req ) == 200)
+  {
+    token.time <- Sys.time()
+    token <- rawToChar( content( token.req ) )
+  }
+#################################################################
+#################################################################
+  
 
 ################################################################
 ###### TRANSLATION VIA https://api.microsofttranslator.com/V2/Http.svc/Translate
 
 # first restrieve an access token
-url.token <- "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
-
-param.token <- list("Subscription-Key" = "b891aa65c63944dab2cce6d65f4e6ae5")
-
-token.req <- POST(url.token, query = param.token)
-
-if (http_error( token.req ) == FALSE && status_code( token.req )) {
-  microsoft.token <- content( token.req )
+get.token <- function() {
+  url.token <- "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+  # flo
+  param.token <- list("Subscription-Key" = "f776294aebb2485dbb5e5bb3b54d634f")
+  # old param.token <- list("Subscription-Key" = "bf01c74f5835401993e7576964444c7e")
+  # older param.token <- list("Subscription-Key" = "b891aa65c63944dab2cce6d65f4e6ae5")
+  
+  if (exists("token.time") == FALSE) {
+    token.time <- Sys.time()
+  }
+  
+  if (exists("token") == FALSE) {
+    token.req <- POST(url.token, query = param.token)
+    if (http_error( token.req ) == FALSE && status_code( token.req ) == 200)
+    {
+      token.time <- Sys.time()
+      token <- rawToChar( content( token.req ) )
+    }
+  }
+  return(token)
 }
 
 
 url <- "https://api.microsofttranslator.com/V2/Http.svc/Translate"
 
-parameters <- list(appid = "", to = "en", text ="")
-parameters$appid <- as.character(paste(c("Bearer", " ", microsoft.token), collapse = ""))
+j <- 2000
 
-parameters$text <- "Ich bin ein Berliner"
-
-request <- POST(url, query = parameters)
+for (i in 1717:length(to.translate)) {
+  j <- j + 1
+  
+  if (j >= 2000) {
+    parameters <- list(appid = paste("Bearer",get.token()), from = "", to = "en", text = "")
+    j <- 0
+  }
+  
+    if ( as.character(tweets.after[to.translate[i], "lang"]) !=
+          as.character(tweets.after[to.translate[i], "user_lang"]) ) {
+      if ( as.character(tweets.after[to.translate[i], "lang"]) == "tr" ) {
+        parameters$from <- "tr"
+      } else {
+        parameters$from <- tweets.after[to.translate[i], "user_lang"]
+      }
+      
+    } else {
+      parameters$from <- tweets.after[to.translate[i], "lang"]
+    }
+    
+    parameters$text <- tweets.after[to.translate[i], "text"]
+    request <- GET(url, query = parameters)
+    
+    if ( http_error( request ) == FALSE & status_code( request ) == 200) {
+      tweets.after[to.translate[i],"translation"] <- 
+        as.character( as_list( content( request ) )[1])
+    } else {
+      as_list( content( request ) )
+      errors <- rbind( errors, tweets.after[to.translate[i],] )
+    }
+}
 
 ################################################################
 
@@ -96,13 +175,6 @@ load("Data/microsoft_api.RData")
 
 tw <- tweets.df[3,]
 tw$text <- as.character(tw$text)
-
-translateR::getMicrosoftLanguages()
-translateR::translate(content.vec = tw$text,
-          microsoft.client.id = "FIM_Bubbles",
-          microsoft.client.secret = "Yxb4yjbFPu3Y5lpaLxbQIbyY4vZBTbeoZAl43dnE0Bg=",
-          source.lang = tr,
-          target.lang = en)
 
 texts <- texts_temp
 

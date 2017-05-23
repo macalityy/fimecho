@@ -15,28 +15,6 @@ library("tm")
 load("Data/Seminar/Tweets.RData")
 save(tweets.df, file = "Data/Seminar/Tweets.RData")
 
-# get rid of tweets older than 16.04.2017
-tweets.after <- subset( tweets.df, format( strptime( tweets.df$created_at,
-                                                     "%a %b %d %H:%M:%S %z %Y",
-                                                     tz="GMT"),'%d') == 16 )
-
-# now either they are tweeted on 16.04.2017 before 20:00
-# or are not from 16.04.2017
-tweets.after <- subset( tweets.after, ( format( strptime( tweets.after$created_at,
-                                                          "%a %b %d %H:%M:%S %z %Y",
-                                                          tz = "GMT" ),'%d' ) == 16 
-                                        & format( strptime( tweets.after$created_at,
-                                                            "%a %b %d %H:%M:%S %z %Y",
-                                                            tz = "GMT" ),'%H' ) < 18 )
-                        | format( strptime( tweets.after$created_at,
-                                            "%a %b %d %H:%M:%S %z %Y",
-                                            tz = "GMT" ),'%d' ) > 16 )
-
-
-tweets.after <- subset( tweets.after, format( strptime( tweets.after$created_at,
-                                                        "%a %b %d %H:%M:%S %z %Y",
-                                                        tz = "GMT" ),'%H' ) >= 18 )
-
 
 # get IDs of those tweets which are not english
 to.translate <- which(tweets.after$lang != "en")

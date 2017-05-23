@@ -30,7 +30,7 @@ comm.sizes <- as.data.frame(sizes(ml.comm))
 
 #count number of communities with specific size
 nrow(comm.sizes[comm.sizes$Freq > 2742,])
-comm.sizes1 <- comm.sizes[comm.sizes$Freq > 2742,]
+comm.sizes1 <- comm.sizes[comm.sizes$Freq > 500,]
 
 #get members of all communities
 comm.membership <- membership(ml.comm)
@@ -163,8 +163,7 @@ plot(c(1:1863), comm.sizes$Freq, xlab = "Walktrap_Community", ylab = "# of Membe
 
 #########################################################################
 #infomap CDA
-comm.sizes <- sizes(im.comm)
-comm.sizes <- as.data.frame(comm.sizes)
+comm.sizes <- as.data.frame(sizes(im.comm))
 
 comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
 comm.membership <- membership(im.comm)
@@ -202,8 +201,7 @@ plot(c(1:7240), comm.sizes$Freq, xlab = "infomap_Community", ylab = "# of Member
 
 #########################################################################
 #labelpropagation CDA
-comm.sizes <- sizes(lp.comm)
-comm.sizes <- as.data.frame(comm.sizes)
+comm.sizes <- as.data.frame(sizes(lp.comm))
 
 comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
 comm.membership <- membership(lp.comm)
@@ -353,8 +351,20 @@ plot(c(1:1965), comm.sizes$Freq, xlab = "Labelpropagation_Community_directed", y
 
 ##################################################################################
 #User_MUL_WAL_LAB_INF Tabelle machen 
-
 usr.comm <- vertices.df[,c(1,14,15,16,17)]
 save(usr.comm, file = "Data/Seminar/UserCommunities.RData")
 
+i <- 1
+
+
+for(i in 1:nrow(vertices.df)) {
+  row <- vertices.df[i,]
+  users.outside <- vertices.df[vertices.df$ml_comm != row$ml_comm, "Id"]
+
+  vertices.df[i, "ties_ext"] <- nrow(subset(edgelist.df, (edgelist.df$Source == row$Id) &
+                                              (edgelist.df$Target %in% users.outside))) 
+  
+  vertices.df[i, "ties_f_sum"] <- nrow(subset(edgelist.df, (edgelist.df$Source == row$Id) |
+                                                (edgelist.df$Target == row$Id)))
+}
 

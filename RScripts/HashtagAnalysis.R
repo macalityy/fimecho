@@ -7,8 +7,8 @@ library(dplyr)
 library(reshape2)
 workingDT<-getwd()
 
-load(paste(c(workingDT, "/Data/Filtered Data/VerticesComm.RData"), collapse = ""))
-load(paste(c(workingDT, "/Data/Filtered Data/UserHashtagFrequency2.RData"), collapse = ""))
+load(paste(c(workingDT, "/Filtered Data/VerticesComm.RData"), collapse = ""))
+load(paste(c(workingDT, "Filtered Data/UserHashtagFrequency2.RData"), collapse = ""))
 load(paste(c(workingDT, "/Data/Filtered Data/UserHashtagFrequency.RData"), collapse = ""))
 load(paste(c(workingDT, "/Data/Filtered Data/Hashtags2.RData"), collapse = ""))
 #load("~/fimecho/Data/Seminar/Vertices.RData")
@@ -21,6 +21,9 @@ load(paste(c(workingDT, "/Data/Filtered Data/Hashtags2.RData"), collapse = ""))
 
 ##Identification of unique users
 Users.df <- UHF2 %>% distinct(User)
+UsersVerices.df <- vertices.df %>% distinct(Id)
+
+subset(vertices.df, !(vertices.df$Id %in% Users.df$User))
 
 
 ##Abolute maximum used hashtag per user

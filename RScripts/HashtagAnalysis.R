@@ -7,8 +7,8 @@ library(dplyr)
 library(reshape2)
 workingDT<-getwd()
 
-load(paste(c(workingDT, "/Data/Filtered Data/VerticesComm.RData"), collapse = ""))
-load(paste(c(workingDT, "/Data/Filtered Data/UserHashtagFrequency2.RData"), collapse = ""))
+load(paste(c(workingDT, "/Filtered Data/VerticesComm.RData"), collapse = ""))
+load(paste(c(workingDT, "Filtered Data/UserHashtagFrequency2.RData"), collapse = ""))
 load(paste(c(workingDT, "/Data/Filtered Data/UserHashtagFrequency.RData"), collapse = ""))
 load(paste(c(workingDT, "/Data/Filtered Data/Hashtags2.RData"), collapse = ""))
 #load("~/fimecho/Data/Seminar/Vertices.RData")
@@ -21,6 +21,9 @@ load(paste(c(workingDT, "/Data/Filtered Data/Hashtags2.RData"), collapse = ""))
 
 ##Identification of unique users
 Users.df <- UHF2 %>% distinct(User)
+UsersVerices.df <- vertices.df %>% distinct(Id)
+
+subset(vertices.df, !(vertices.df$Id %in% Users.df$User))
 
 
 ##Abolute maximum used hashtag per user
@@ -97,18 +100,32 @@ for(i in 1:nrow(RelFreq.df)){
     RelFreq.df[i,"MaxUsedHashtag"]<-NA
   }
 }
+
 colnames(SelectedHashtagFreqperUser)<-c("User","ABS_EVET","ABS_HAYIR","ABS_REFERENDUM","ABS_TURKEY","ABS_TURKEYREFERENDUM",
                                         "ABS_TURKEYSCHOICE", "Sum")
+
+
 UserHashtagFrequency.df<-cbind(RelFreq.df, SelectedHashtagFreqperUser[,2:7])
-save(UserHashtagFrequency.df, file = "/users/flori/fimecho/Data/Filtered Data/UserHashtagRelativeFrequency2.RData")
+save(UserHashtagFrequency.df, file = "UserHashtagRelativeFrequencyNEW.RData")
+
+UserHashtagFrequency.df$OneHashtag<-NA
+
+for(i in 1:nrow(UserHashtagFrequency.df)){
+  if(UserHashtagFrequency.df[i,"max"] == 1){
+    UserHashtagFrequency.df[i,"OneHashtag"]<-TRUE
+  }
+}
 
 #Merge UserHashtagFrequency.df to Vertices.df Left Join
 UserHashtagFrequency.df<-subset(UserHashtagFrequency.df[, c("User", "MaxUsedHashtag","ABS_EVET","ABS_HAYIR",
                                                                  "ABS_REFERENDUM","ABS_TURKEY",
-                                                                 "ABS_TURKEYREFERENDUM","ABS_TURKEYSCHOICE")])
+                                                                 "ABS_TURKEYREFERENDUM","ABS_TURKEYSCHOICE", "OneHashtag")])
 
 vertices.df<- merge(x=vertices.df, y=UserHashtagFrequency.df, by.x="Id", by.y = "User", all.x=TRUE)
-save(vertices.df, file = paste(c(workingDT, "/Data/Filtered Data/VerticesCommWHashtags.RData"), collapse = ""))
+save(vertices.df, file = paste(c(workingDT, "VerticesCommWHashtagsNEW.RData"), collapse = ""))
+
+#Percentage of Users who used just one hashtag
+table(vertices.df$OneHashtag)/nrow(vertices.df)
 
 
 #####All HASHTAGs Analysis Start###########################################################################################

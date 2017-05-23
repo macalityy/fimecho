@@ -2,7 +2,7 @@
 library(stringr)
 library(igraph)
 library(streamR)
-library(plyr)
+#library(plyr)
 library(dplyr)
 workingDT<-getwd()
 file <- paste(workingDT,"/Data/Turkey/Turkeyall.csv",sep="")
@@ -99,8 +99,6 @@ UserHashtagTableAsDF2[,"Hashtag"] <- gsub(UserHashtagTableAsDF2[,"Hashtag"],patt
 
 #Group by 2 columns (User, Hashtag) and count lines(=Frequency)
 #if:Error in n() : This function should not be called directly
-#detach()
-#library(dplyr)
 grp_cols <- c("User","Hashtag")
 # Convert character vector to list of symbols
 dots <- lapply(grp_cols, as.symbol)

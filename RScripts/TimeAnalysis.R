@@ -2,6 +2,8 @@
 library(stringr)
 library(plyr)
 library(dplyr)
+library(ggplot2)
+library(scales)
 
 workingDT<-getwd()
 file <- paste(workingDT,"/Data/Turkey/Turkeyall.csv",sep="")
@@ -19,6 +21,8 @@ tweets.df <- subset(tweets.df[ ,c("X.1", "created_at")])
 
 Sys.getlocale()
 Sys.setlocale("LC_TIME", "English")
+
+tweets.df$DateHourMin<-format(strptime(tweets.df$created_at, "%a %b %d %H:%M:%S %z %Y", tz="GMT"),'%Y-%m-%d %H %M')
 tweets.df$DateHour<-format(strptime(tweets.df$created_at, "%a %b %d %H:%M:%S %z %Y", tz="GMT"),'%Y-%m-%d %H')
 tweets.df$Date<-format(strptime(tweets.df$created_at, "%a %b %d %H:%M:%S %z %Y", tz="GMT"),'%Y-%m-%d')
 tweets.df$Hour<-format(strptime(tweets.df$created_at, "%a %b %d %H:%M:%S %z %Y", tz="GMT"),'%H')
@@ -33,6 +37,11 @@ for(i in 1:nrow(DateTimeFreq.df)){
 for(i in 1:nrow(DateTimeFreq.df)){
   DateTimeFreq.df$Percent[i]=DateTimeFreq.df$Absolut[i]/sum(DateTimeFreq.df$Freq)
 }
+library(date)
+hist(as.POSIXct(strptime(tweets.df$DateHourMin, "%Y-%m-%d %H %M", tz="GMT")), breaks=10000,main="",format="%H %M")
+#axis.Date(1,as.POSIXct(strptime(tweets.df$DateHourMin)))
+#axis.Date(1, at=seq(as.Date("2017-04-14"), as.Date("2017-04-18"), by="days"), format="%d %H %M")
+
 par(mar = rep(4, 4))
 barData<-DateTimeFreq.df$Freq
 y <- lineData<-DateTimeFreq.df$Percent
@@ -52,11 +61,29 @@ box()
 
 ###SUBSET of tweets.df do find user frequency
 
-tweets16After20UTC.df<-tweets.df[which(tweets.df$Date == "2017-04-16"& tweets.df$Hour >= 18), ]
-tweets16AT20UTC.df<-tweets.df[which(tweets.df$Date == "2017-04-16"& tweets.df$Hour == 18), ]
-tweets17.df<-tweets.df[tweets.df$Date>="2017-04-17", ]
-tweetsAfter.df<-rbind(tweets16After20UTC.df,tweets17.df)
-tweetsBefore.df<-subset(tweets.df, !(tweets.df$id_str %in% tweetsAfter.df$id_str)) 
+# now either they are tweeted on 16.04.2017 before 14:58:47
+# or are not from 16.04.2017
+tweets.after <- subset( tweets.df, ( format( strptime( tweets.df$created_at,
+                                                       "%a %b %d %H:%M:%S %z %Y",
+                                                       tz = "GMT" ),'%d' ) == 16 
+                                     & format( strptime( tweets.df$created_at,
+                                                         "%a %b %d %H:%M:%S %z %Y",
+                                                         tz = "GMT" ),'%H' ) >= 14
+                                     & format( strptime( tweets.df$created_at,
+                                                         "%a %b %d %H:%M:%S %z %Y",
+                                                         tz = "GMT" ),'%M' ) >= 58
+                                     & format( strptime( tweets.df$created_at,
+                                                         "%a %b %d %H:%M:%S %z %Y",
+                                                         tz = "GMT" ),'%S' ) >= 47)
+                        | format( strptime( tweets.df$created_at,
+                                            "%a %b %d %H:%M:%S %z %Y",
+                                            tz = "GMT" ),'%d' ) > 16 )
+
+save(tweets.after, file = paste(c(workingDT, "/Data/Filtered Data/TweetsAfter.RData"), collapse = ""))
+
+
+tweetsBefore.df<-subset(tweets.df, !(tweets.df$id_str %in% tweets.after$id_str)) 
+save(tweetsBefore.df, file = paste(c(workingDT, "/Data/Filtered Data/TweetsBefore.RData"), collapse = ""))
 
 UsersTotal.df <- tweets.df %>% distinct(user_id_str)
 UsersBefore.df <- tweetsBefore.df %>% distinct(user_id_str)

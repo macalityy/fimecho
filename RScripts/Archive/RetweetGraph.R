@@ -21,6 +21,7 @@ filter.value <- as.integer(unlist(args[2]))
 #read csv file to get tweets into dataframe
 tweets.df <- read.csv2(file = file, header = TRUE, stringsAsFactors = FALSE)
 
+
 #shrink dataframe to columns we might use later
 tweets.df <- subset(tweets.df[,c("X.1", "X", "text", "truncated", "id_str", "source",
                                   "created_at", "lang", "listed_count", "location",
@@ -28,6 +29,8 @@ tweets.df <- subset(tweets.df[,c("X.1", "X", "text", "truncated", "id_str", "sou
                                   "statuses_count", "followers_count", "favourites_count",
                                   "time_zone", "user_lang", "friends_count", "screen_name",
                                   "expanded_url", "url")])
+tweets.df<-tweets.before
+tweets.df <- transform( tweets.df, id_str = as.character(id_str), user_id_str = as.character(user_id_str), text=as.character(text) )
 
 # from the data frame, we only need the column text to find out which rows are retweets
 tweets.text <- tweets.df[,"text"]

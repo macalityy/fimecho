@@ -6,6 +6,8 @@ load("~/fimecho/Data/Seminar/Edgelist_no.RData")
 load("~/fimecho/Data/Seminar/Tweets.RData")
 load("~/fimecho/Data/Seminar/Vertices.RData")
 
+vertices.df<-vertices.df[,c(2,1,3,4,5,6,7,8,9,10,11,12,13)]
+
 
 # create IGraph from Edgelist and Vertices
 tr.graph <- graph_from_data_frame(edgelist.df, directed = TRUE, vertices = vertices.df)
@@ -36,7 +38,8 @@ comm.sizes1 <- comm.sizes[comm.sizes$Freq > 500,]
 comm.membership <- membership(ml.comm)
 
 communities.df <- as.data.frame(communities(ml.comm))
-communities.df$community <- c(1:1009)
+##todo manually assign communityid
+communities.df$community <- c(1:430)
 
 # rearrange colums
 communities.df <- communities.df[,c(2,1)]
@@ -63,13 +66,17 @@ for(i in 1:nrow(communities.df))
 
 # convert member column to character
 all.members.mul$members <- as.character(all.members.mul$members)
+#check again for merge key
+head(vertices.df)
+head(all.members.mul)
 
 # merge community to vertices.df
-vertices.df <- merge(vertices.df, all.members.mul, by.x = "Id", by.y = "members", all.x = TRUE)
+vertices.df <- merge(vertices.df, all.members.mul, by.x = "usr_Id", by.y = "members", all.x = TRUE)
+head(vertices.df)
 colnames(vertices.df)[14] <- "ml_comm"
 vertices.df$ml_comm <- as.character(vertices.df$ml_comm)
 
-save(vertices.df, file = "Data/Seminar/VerticesComm.RData")
+save(vertices.df, file = "Data/Vertices2NewComm.RData")
 
 
 ############ SAMPLING

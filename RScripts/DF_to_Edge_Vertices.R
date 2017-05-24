@@ -11,18 +11,21 @@ library(plyr); library(dplyr)
 library(stringr)
 workingDT<-getwd()
 
-load("fimecho/Data/Turkey/TweetsDF.RData")
+#load("fimecho/Data/Turkey/TweetsDF.RData")
+
+
+#tweets.df<-tweetsBefore.df
+
 
 #shrink dataframe to columns we might use later
-tweets.df <- subset(tweets.df[,c("X.1", "X", "text", "truncated", "id_str", "source",
+tweets.df <- subset(tweets.df[,c("X", "text", "truncated", "id_str", "source",
                                  "created_at", "lang", "listed_count", "location",
                                  "user_id_str", "geo_enabled", "user_created_at",
                                  "statuses_count", "followers_count", "favourites_count",
                                  "time_zone", "user_lang", "friends_count", "screen_name",
                                  "expanded_url", "url")])
 
-tweets.df <- transform( tweets.df, id_str = as.character(id_str), user_id_str = as.character(user_id_str) )
-
+tweets.df <- transform( tweets.df, id_str = as.character(id_str), user_id_str = as.character(user_id_str), text=as.character(text) )
 
 
 #get all vertices data
@@ -107,7 +110,7 @@ vertices.df$ties.out[is.na(vertices.df$ties.out)] <- 0
 vertices.df$ties.sum <- vertices.df$ties.in + vertices.df$ties.out
 
 #filter those users who dont have any connections
-vertices.df <- subset(vertices.df, vertices.df$ties.sum > 0)
+vertices.df <- subset(vertices.df, vertices.df$ties.sum > 2)
 
 colnames(vertices.df) <- c("Id", "usr_Id", "geo_enabled", 
                            "user_created_at", "time_zone", "user_lang",
@@ -117,8 +120,22 @@ colnames(vertices.df) <- c("Id", "usr_Id", "geo_enabled",
 colnames(edgelist.df) <- c("Source", "Target")
 
 # save both data frames to files
-save(vertices.df, file = "fimecho/Data/Turkey/AllVertices.RData")
-save(edgelist.df, file = "fimecho/Data/Turkey/AllEdges.RData")
+save(vertices.df, file = "Data/Turkey/Vertices2New.RData")
+save(edgelist.df, file = "Data/Turkey/Edges2New.RData")
+
+edgelist<-edgelist.df
+head(edgelist.df)
+head(vertices.df)
+edgelist.df <- subset(edgelist.df, (edgelist.df$Source %in% vertices.df$Id) &
+                      (edgelist.df$Target %in% vertices.df$Id))
+
+tweets_sc_st.df<- as.data.frame(vertices.df[,c(1,2)])
+colnames(tweets_sc_st.df)<-c("Source","user_id_Source")
+edgelist.df<-merge(edgelist.df, tweets_sc_st.df, by="Source",all.x = TRUE,all.y=FALSE)
+colnames(tweets_sc_st.df)<- c("Target","user_id_Target")
+edgelist.df<-merge(edgelist.df, tweets_sc_st.df, by="Target",all.x =TRUE, all.y=FALSE)
+edgelist.df<-edgelist.df[3:4]
+save(edgelist.df, file = "Edgelist2New.RData")
 
 
 ### SAMPLE SET

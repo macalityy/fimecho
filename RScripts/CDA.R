@@ -354,17 +354,56 @@ plot(c(1:1965), comm.sizes$Freq, xlab = "Labelpropagation_Community_directed", y
 usr.comm <- vertices.df[,c(1,14,15,16,17)]
 save(usr.comm, file = "Data/Seminar/UserCommunities.RData")
 
-i <- 1
 
 
+#################################################################
+# Calculate mu for different CDA
+
+
+# Mu for ML
 for(i in 1:nrow(vertices.df)) {
   row <- vertices.df[i,]
   users.outside <- vertices.df[vertices.df$ml_comm != row$ml_comm, "Id"]
 
-  vertices.df[i, "ties_ext"] <- nrow(subset(edgelist.df, (edgelist.df$Source == row$Id) &
-                                              (edgelist.df$Target %in% users.outside))) 
+  mu.df[mu.df$Id == row$Id, "ML_ties_ext"] <-
+    nrow( subset(edgelist.df, (edgelist.df$Source == row$Id) &
+                                 (edgelist.df$Target %in% users.outside))) 
   
-  vertices.df[i, "ties_f_sum"] <- nrow(subset(edgelist.df, (edgelist.df$Source == row$Id) |
-                                                (edgelist.df$Target == row$Id)))
+  mu.df[mu.df$Id == row$Id, "ML_ties_f_sum"] <-
+    nrow(subset(edgelist.df, (edgelist.df$Source == row$Id) |
+                                 (edgelist.df$Target == row$Id)))
 }
 
+# Mu for WT
+for(i in 1:nrow(vertices.df)) {
+  row <- vertices.df[i,]
+  users.outside <- vertices.df[vertices.df$wt_comm != row$wt_comm, "Id"]
+  
+  mu.df[mu.df$Id == row$Id, "WT_ties_ext"] <-
+    nrow( subset(edgelist.df, (edgelist.df$Source == row$Id) &
+                    (edgelist.df$Target %in% users.outside))) 
+  
+  mu.df[mu.df$Id == row$Id, "WT_ties_f_sum"] <-
+    nrow(subset(edgelist.df, (edgelist.df$Source == row$Id) |
+                   (edgelist.df$Target == row$Id)))
+}
+
+# Mu for LP
+for(i in 1:nrow(vertices.df)) {
+  row <- vertices.df[i,]
+  users.outside <- vertices.df[vertices.df$lp_comm != row$lp_comm, "Id"]
+  
+  mu.df[mu.df$Id == row$Id, "LP_ties_ext"] <-
+    nrow( subset(edgelist.df, (edgelist.df$Source == row$Id) &
+                    (edgelist.df$Target %in% users.outside))) 
+  
+  mu.df[mu.df$Id == row$Id, "LP_ties_f_sum"] <-
+    nrow(subset(edgelist.df, (edgelist.df$Source == row$Id) |
+                   (edgelist.df$Target == row$Id)))
+}
+
+save(mu.df, file = "Data/Seminar/mu.df")
+
+mu.ml <- sum(mu.df$ML_ties_ext) / sum(mu.df$ML_ties_f_sum)
+mu.wt <- sum(mu.df$WT_ties_ext) / sum(mu.df$WT_ties_f_sum)
+mu.lp <- sum(mu.df$LP_ties_ext) / sum(mu.df$LP_ties_f_sum)

@@ -39,7 +39,7 @@ comm.membership <- membership(ml.comm)
 
 communities.df <- as.data.frame(communities(ml.comm))
 ##todo manually assign communityid
-communities.df$community <- c(1:430)
+communities.df$community <- c(1:nrow(communities.df))
 
 # rearrange colums
 communities.df <- communities.df[,c(2,1)]
@@ -365,7 +365,7 @@ save(usr.comm, file = "Data/Seminar/UserCommunities.RData")
 
 #################################################################
 # Calculate mu for different CDA
-
+# Warning: Takes a loooong time
 
 # Mu for ML
 for(i in 1:nrow(vertices.df)) {
@@ -410,6 +410,7 @@ for(i in 1:nrow(vertices.df)) {
 }
 
 save(mu.df, file = "Data/Seminar/mu.df")
+load(mu.df, file = "Data/Seminar/mu.df")
 
 mu.ml <- sum(mu.df$ML_ties_ext) / sum(mu.df$ML_ties_f_sum)
 mu.wt <- sum(mu.df$WT_ties_ext) / sum(mu.df$WT_ties_f_sum)

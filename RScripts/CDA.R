@@ -2,6 +2,8 @@
 library(igraph)
 library(dplyr)
 
+set.seed(42)
+
 load("~/fimecho/Data/Seminar/Edgelist_no.RData")
 load("~/fimecho/Data/Seminar/Tweets.RData")
 load("~/fimecho/Data/Seminar/Vertices.RData")
@@ -22,6 +24,11 @@ ml.comm <- multilevel.community(tr.graph)
 wt.comm <- walktrap.community(tr.graph)
 im.comm <- infomap.community(tr.graph)
 lp.comm <- label.propagation.community(tr.graph)
+
+save(ml.comm, file = "Data/Seminar/MLComm.RData")
+save(wt.comm, file = "Data/Seminar/WTComm.RData")
+save(im.comm, file = "Data/Seminar/IMComm.RData")
+save(lp.comm, file = "Data/Seminar/LPComm.RData")
 
 
 ##############################################################################
@@ -124,7 +131,7 @@ barplot(height = as.matrix(t(y[,3:10])), width = 10, names.arg = y[,"Var1"],
 save(all.members.mul,file="all.members.mul.RData")
 
 # Plot Communities with their # of members
-plot(c(1:1009), comm.sizes$Freq, xlab = "MultiLevel_Community", ylab = "# of Members")
+plot(c(1:nrow(comm.sizes)), comm.sizes$Freq, xlab = "MultiLevel_Community", ylab = "# of Members")
 
 # Filtered Plot
 plot(c(1:nrow(comm.sizes[comm.sizes$Freq > 1000,])),
@@ -140,7 +147,7 @@ comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
 comm.membership <- membership(wt.comm)
 
 communities.df <- data.frame(communities(wt.comm))
-communities.df$community <- c(1:1863)
+communities.df$community <- c(1:nrow(communities.df))
 
 all.members.wal <- data.frame()
 
@@ -176,7 +183,7 @@ comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
 comm.membership <- membership(im.comm)
 
 communities.df <- data.frame(communities(im.comm))
-communities.df$community <- c(1:7164)
+communities.df$community <- c(1:nrow(communities.df))
 
 all.members.inf <- data.frame()
 
@@ -214,7 +221,7 @@ comm.sizes1 <- comm.sizes[comm.sizes$Freq > 10,]
 comm.membership <- membership(lp.comm)
 
 communities.df <- data.frame(communities(lp.comm))
-communities.df$community <- c(1:1970)
+communities.df$community <- c(1:nrow(communities.df))
 
 all.members.lab <- data.frame()
 

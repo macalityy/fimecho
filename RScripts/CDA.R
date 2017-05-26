@@ -409,8 +409,8 @@ for(i in 1:nrow(vertices.df)) {
                    (edgelist.df$Target == row$Id)))
 }
 
-save(mu.df, file = "Data/Seminar/mu.df")
-load(mu.df, file = "Data/Seminar/mu.df")
+save(mu.df, file = "Data/Seminar/mu.RData")
+load(mu.df, file = "Data/Seminar/mu.RData")
 
 mu.ml <- sum(mu.df$ML_ties_ext) / sum(mu.df$ML_ties_f_sum)
 mu.wt <- sum(mu.df$WT_ties_ext) / sum(mu.df$WT_ties_f_sum)

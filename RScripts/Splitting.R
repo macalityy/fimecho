@@ -31,27 +31,23 @@ tweets.after <- subset( tweets.after, ( format( strptime( tweets.after$created_a
                                                             tz = "GMT" ),'%d' ) == 16 
                                           & format( strptime( tweets.after$created_at,
                                                               "%a %b %d %H:%M:%S %z %Y",
-                                                              tz = "GMT" ),'%H' ) >= 15 )
-                         | format( strptime( tweets.after$created_at,
+                                                              tz = "GMT" ),'%H' ) >= 14 )
+                         | ( format( strptime( tweets.after$created_at,
                                              "%a %b %d %H:%M:%S %z %Y",
-                                             tz = "GMT" ),'%d' ) > 16 )
+                                             tz = "GMT" ),'%d' ) == 17 
+                             & format( strptime( tweets.after$created_at,
+                                                 "%a %b %d %H:%M:%S %z %Y",
+                                                 tz = "GMT" ),'%H' ) <= 22 ))
 
 
 save(tweets.after, file = "Data/Seminar/TweetsAfter.RData")
 save(tweets.before, file = "Data/Seminar/TweetsBefore.RData")
 
-
-
-
-tw.dayafter <- subset( tweets.after, ( format( strptime( tweets.after$created_at,
-                                                       "%a %b %d %H:%M:%S %z %Y",
-                                                       tz = "GMT" ),'%d' ) == 16
-                                  | ( format( strptime( tweets.after$created_at,
-                                                        "%a %b %d %H:%M:%S %z %Y",
-                                                        tz = "GMT" ),'%d' ) == 17
-                                    & format( strptime( tweets.after$created_at,
-                                                      "%a %b %d %H:%M:%S %z %Y",
-                                                      tz = "GMT" ),'%H' ) < 22)) )
+tweets.after <-
+  tweets.after[which(
+    as.POSIXct(tweets.after$created_at, format = "%d-%m-%Y %H:%M:%S", tz = "GMT") >=
+      as.POSIXct("2017-04-16 14:58:47", tz = "GMT")
+  ),]
 
 save(tw.dayafter, file = "Data/Seminar/TweetsAfterAndDayAfter.RData")
 

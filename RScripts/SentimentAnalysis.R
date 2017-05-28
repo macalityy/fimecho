@@ -113,20 +113,23 @@ sentiment <- sentiment[, c(7, 1, 2, 3, 4, 5, 6, 8)]
 # analyze the sentiment
 analysis <-
   sentiment_by(
-    sentiment[, "encode"],
-    #polarity_dt = lexicon::hash_sentiment_huliu,
-    # valence_shifters_dt = lexicon::hash_valence_shifters,
-    # amplifier.weight = 0.8,
-    # n.before = 5,
-    # n.after = 2,
-    # question.weight = 1,
-    # adversative.weight = 0.85,
-    # missing_value = 0
+    sentiment[, "encode"]
+    # polarity_dt = lexicon::hash_sentiment_huliu,
+    #  valence_shifters_dt = lexicon::hash_valence_shifters,
+    #  amplifier.weight = 0.8,
+    #  n.before = 5,
+    #  n.after = 2,
+    #  question.weight = 1,
+    #  adversative.weight = 0.85,
+    #  missing_value = 0
   )
 
 summary(analysis)
 
+save(analysis, file = "Data/Seminar/ResultofSentimentR.RData")
+load ("Data/Seminar/ResultofSentimentR.RData")
 save(sentiment, file = "Data/Seminar/SentimentDF.RData")
+load ("Data/Seminar/SentimentDF.RData")
 
 ########################################################################
 ## PLOTTING
@@ -140,13 +143,30 @@ tp <- turnpoints(ts(sentiment.density$y))
 summary(tp)
 
 # plot it
-plot(sentiment.density, main = "Sentiment Distribution")
-# plot the specific local minimum points
-#points(sentiment.density$x[310], sentiment.density$y[310], col = "red")
-#points(sentiment.density$x[319], sentiment.density$y[319], col = "red")
+plot(sentiment.density, main = "Sentiment Distribution", lwd = 1.5)
 
 # all turning points
-#points(sentiment.density$x[tp$tppos],sentiment.density$y[tp$tppos],col="red")
+points(sentiment.density$x[tp$tppos],sentiment.density$y[tp$tppos],col="tomato", pch = 16)
+
+plot(sentiment.density, xlim = c(-1,1), ylim = c(0,1.5), lwd = 1.5, main = "Sentiment Distribution (Zoom)")
+points(sentiment.density$x[tp$tppos],sentiment.density$y[tp$tppos],col="tomato", pch = 16)
+
+plot(sentiment.density, xlim = c(-0.5,0.5), ylim = c(0,1.5), lwd = 1.5, main = "Sentiment Distribution (Zoom 2x)")
+points(sentiment.density$x[tp$tppos],sentiment.density$y[tp$tppos],col="tomato", pch = 16)
+
+# plot the specific local minimum points
+plot(sentiment.density, xlim = c(-0.5,0.5), ylim = c(0,1.5), lwd = 1.5, main = "Sentiment Distribution (Zoom 2x)")
+points(sentiment.density$x[310], sentiment.density$y[310], col = "tomato", pch = 16)
+points(sentiment.density$x[319], sentiment.density$y[319], col = "tomato", pch = 16)
+
+text(sentiment.density$x[310], (sentiment.density$y[310]-0.1),
+     paste(c("x1=",round(sentiment.density$x[310], digits = 4)), collapse = ""))
+text(sentiment.density$x[319], (sentiment.density$y[319]-0.1),
+     paste(c("x2=",round(sentiment.density$x[319], digits = 4)), collapse = ""))
+
+plot(sentiment.density, xlim = c(-0.5,0.5), ylim = c(0,1.5), lwd = 1.5, main = "Sentiment Distribution (Zoom 2x)")
+abline(v=c(class$min), col = "tomato", lty = "dotted", lwd = 3)
+abline(v=c(class$max), col = "tomato", lty = "dotted", lwd = 3)
 
 # we will use the smaller absolute minimum to have a symmetric classification
 # therefore we wont use sentiment.density$y[209],
@@ -158,31 +178,38 @@ x1 <- min(which(sentiment.density$x >= (-sentiment.density$x[319])))
 x2 <- max(which(sentiment.density$x <  sentiment.density$x[319]))
 x3 <- max(which(sentiment.density$x <  sentiment.density$x[512]))
 
+
+# plot it
+plot(sentiment.density, xlim = c(-1,1), main = "Classified Sentiment Distribution", lwd = 1.5)
 # colour segments
 with(sentiment.density, polygon(
   x = c(x[c(x0, x0:x1, x1)]),
   y = c(0, y[x0:x1], 0),
-  col = "red"
+  col = "tomato"
 ))
 with(sentiment.density, polygon(
   x = c(x[c(x1, x1:x2, x2)]),
   y = c(0, y[x1:x2], 0),
-  col = "grey"
+  col = "wheat"
 ))
 with(sentiment.density, polygon(
   x = c(x[c(x2, x2:x3, x3)]),
   y = c(0, y[x2:x3], 0),
-  col = "green"
+  col = "springgreen4"
 ))
 
 # interval for neutral classification is:
-min <- -sentiment.density$x[319]
-max <- sentiment.density$x[319]
+class <- list()
+class$min <- -sentiment.density$x[319]
+class$max <- sentiment.density$x[319]
+
+save(class, file = "Data/Seminar/ClassificationInterval.RData")
+load("Data/Seminar/ClassificationInterval.RData")
 
 # define frequency
-freq <- c(nrow(analysis[analysis$ave_sentiment < min]),
-          nrow(analysis[analysis$ave_sentiment <= max]),
-          nrow(analysis[analysis$ave_sentiment > max]))
+freq <- c(nrow(analysis[analysis$ave_sentiment < class$min]),
+          nrow(analysis[analysis$ave_sentiment <= class$max]),
+          nrow(analysis[analysis$ave_sentiment > class$max]))
 
 freq <- (freq/sum(freq))*100
 # barplot
@@ -227,7 +254,9 @@ sd(user.sent$ave_sentiment)
 
 # Save to File
 save(tweet.sent, file = "Data/Seminar/TweetID_Sentiments.RData")
+load("Data/Seminar/TweetID_Sentiments.RData")
 save(user.sent, file = "Data/Seminar/UserID_AveSentiments.RData")
+load("Data/Seminar/UserID_AveSentiments.RData")
 
 
 # merge sentiment with vertices.df
@@ -248,9 +277,9 @@ class <- vector(length = nrow(vertices.df))
 classify <- function(x) {
   if ( is.na(x) == TRUE) {
     y <- 0
-  } else if ( x < min ) {
+  } else if ( x < class$min ) {
     y <- 1  
-  } else if ( x > max ) {
+  } else if ( x > class$max ) {
     y <- 3
   } else {
     y <- 2
@@ -290,16 +319,30 @@ freq <- (freq / sum(freq)) * 100
 barplot(
   freq,
   names.arg = c("Not Assessed", "Negative", "Neutral", "Positive"),
-  col = c("grey", "red", "grey", "green"),
+  col = c("gray", "tomato", "wheat", "springgreen4"),
   main = "User Classification",
   ylab = "Percentage",
   ylim = c(0, 30)
 )
+abline(
+  h = seq(0, 50, 5),
+  col = "snow4",
+  lty = "dotted"
+)
+barplot(
+  freq,
+  names.arg = c("Not Assessed", "Negative", "Neutral", "Positive"),
+  col = c("gray", "tomato", "wheat", "springgreen4"),
+  main = "User Classification",
+  ylab = "Percentage",
+  ylim = c(0, 30),
+  add = TRUE
+)
 
 # define frequency
-freq <- c(nrow(user.sent[user.sent$ave_sentiment < min, ]),
-          nrow(user.sent[user.sent$ave_sentiment <= max & user.sent$ave_sentiment >= min, ]),
-          nrow(user.sent[user.sent$ave_sentiment > max, ]))
+freq <- c(nrow(user.sent[user.sent$ave_sentiment < class$min, ]),
+          nrow(user.sent[user.sent$ave_sentiment <= class$max & user.sent$ave_sentiment >= class$min, ]),
+          nrow(user.sent[user.sent$ave_sentiment > class$max, ]))
 
 freq <- (freq / sum(freq) * 100)
 
@@ -309,9 +352,24 @@ freq <- (freq / sum(freq) * 100)
 barplot(
   freq,
   names.arg = c("Negative", "Neutral", "Positive"),
-  col = c("red", "grey", "green"),
+  col = c("tomato", "wheat", "springgreen4"),
   main = "User Classification",
   ylab = "Percentage",
   ylim = c(0, 50)
 )
 
+abline(
+  h = seq(0, 50, 10),
+  col = "snow4",
+  lty = "dotted"
+)
+
+barplot(
+  freq,
+  names.arg = c("Negative", "Neutral", "Positive"),
+  col = c("tomato", "wheat", "springgreen4"),
+  main = "User Classification",
+  ylab = "Percentage",
+  ylim = c(0, 50),
+  add = TRUE
+)

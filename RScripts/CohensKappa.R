@@ -158,4 +158,9 @@ save(tweet.sent, file = "Data/Seminar/TweetID_Sentiments.RData")
 temp <-
   subset(tweet.sent, is.na(tweet.sent$manual_sentiment) == FALSE)
 
+table(tweet.sent$manual_sentiment)
+sum(table(tweet.sent$manual_sentiment))
+
 irr::kappa2(temp[, c("class", "manual_sentiment")], "unweighted")
+
+cor(temp$class, temp$manual_sentiment)
